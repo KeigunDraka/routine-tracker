@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Routine Tracker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #e8e8e8;
+      min-height: 100vh;
+      padding: 20px 14px 48px;
+    }
+
+    .container { max-width: 480px; margin: 0 auto; }
+
+    /* ── 날짜 네비게이션 ── */
+    .date-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .nav-btn {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #888;
+      width: 40px; height: 40px;
+      border-radius: 8px;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .nav-btn:active { background: #252525; }
+
+    .date-center { text-align: center; flex: 1; padding: 0 8px; }
+
+    .date-main { font-size: 17px; font-weight: 600; color: #fff; }
+
+    .date-sub-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .date-weekday { font-size: 12px; color: #555; }
+
+    .today-btn {
+      font-size: 11px;
+      color: #40916c;
+      background: #0d1f17;
+      border: 1px solid #2d6a4f;
+      border-radius: 10px;
+      padding: 2px 8px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .today-btn.visible { display: inline-block; }
+
+    .section-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #444;
+      margin-bottom: 10px;
+      margin-top: 28px;
+    }
+
+    /* ── 수면 ── */
+    .sleep-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .time-group {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+
+    .time-label { font-size: 11px; color: #555; margin-bottom: 6px; display: block; }
+
+    .time-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 22px;
+      font-weight: 500;
+      width: 100%;
+      font-family: inherit;
+      letter-spacing: 0.02em;
+    }
+
+    .time-input::placeholder { color: #2a2a2a; font-size: 20px; }
+
+    .time-hint { font-size: 10px; color: #333; margin-top: 3px; }
+
+    /* ── 루틴 ── */
+    .routines { display: flex; flex-direction: column; gap: 8px; }
+
+    .routine-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 11px 14px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .routine-item.done {
+      border-color: #2d6a4f;
+      background: #0d1f17;
+    }
+
+    .routine-item.toggle-item { cursor: pointer; }
+
+    .check-circle {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 2px solid #333;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .routine-item.done .check-circle { background: #40916c; border-color: #40916c; }
+
+    .check-circle::after {
+      content: '';
+      width: 4px; height: 8px;
+      border: 2px solid #fff;
+      border-top: none; border-left: none;
+      transform: rotate(45deg) translateY(-1px);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .routine-item.done .check-circle::after { opacity: 1; }
+
+    .routine-label { font-size: 14px; color: #aaa; flex: 1; }
+    .routine-item.done .routine-label { color: #e0e0e0; }
+
+    .routine-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .routine-num {
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      outline: none;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      width: 54px;
+      text-align: center;
+      padding: 5px 4px;
+    }
+
+    .routine-num:focus { border-color: #40916c; }
+    .routine-num::placeholder { color: #2a2a2a; }
+
+    .routine-unit { font-size: 11px; color: #444; min-width: 20px; }
+    .routine-item.done .routine-unit { color: #40916c; }
+
+    .plus-btn {
+      background: #1e2e26;
+      border: 1px solid #2d6a4f;
+      color: #40916c;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: inherit;
+      padding: 5px 9px;
+      cursor: pointer;
+      white-space: nowrap;
+      min-height: 32px;
+    }
+
+    .plus-btn:active { background: #243a2e; }
+
+    /* ── 달리기 ── */
+    .running-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .field-group {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 12px 12px 10px;
+    }
+
+    .field-label { font-size: 11px; color: #555; margin-bottom: 6px; display: block; }
+
+    .field-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 500;
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .field-input::placeholder { color: #2a2a2a; }
+    .field-unit { font-size: 10px; color: #444; margin-top: 3px; }
+
+    /* ── 메모 ── */
+    .memo-input {
+      width: 100%;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 13px 14px;
+      color: #ccc;
+      font-size: 14px;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+      line-height: 1.6;
+    }
+
+    .memo-input:focus { border-color: #333; }
+    .memo-input::placeholder { color: #2a2a2a; }
+
+    /* ── 버튼 ── */
+    .btn-row { display: flex; gap: 8px; margin-top: 28px; }
+
+    .btn {
+      flex: 1;
+      padding: 14px 8px;
+      border-radius: 10px;
+      border: none;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      min-height: 48px;
+    }
+
+    .btn-save { background: #40916c; color: #fff; }
+    .btn-save:active { background: #357a5a; }
+
+    .btn-export { background: #1a2a3a; color: #6aafd6; border: 1px solid #1e3a5f; }
+    .btn-import { background: #1a1a2a; color: #8a8adc; border: 1px solid #2a2a4a; }
+
+    /* ── 달력 ── */
+    .calendar-section { margin-top: 40px; }
+
+    .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .month-nav button {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #666;
+      width: 32px; height: 32px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .month-label { font-size: 13px; color: #888; font-weight: 500; }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+    }
+
+    .cal-header {
+      text-align: center;
+      font-size: 10px;
+      color: #3a3a3a;
+      padding: 4px 0 6px;
+    }
+
+    .cal-day {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #444;
+      position: relative;
+      gap: 2px;
+    }
+
+    .cal-day.has-data { cursor: pointer; color: #888; }
+    .cal-day.has-data:active { background: #1a1a1a; }
+
+    .cal-day.selected { background: #1a1a1a; border: 1px solid #333; }
+
+    .cal-day.today-marker .day-num {
+      background: #40916c;
+      color: #fff;
+      border-radius: 50%;
+      width: 22px; height: 22px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .dots { display: flex; gap: 2px; }
+    .dot { width: 3px; height: 3px; border-radius: 50%; background: #40916c; }
+    .dot.run { background: #4a9eda; }
+
+    /* ── 토스트 ── */
+    .toast {
+      position: fixed;
+      bottom: 20px; left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: #222;
+      border: 1px solid #333;
+      color: #bbb;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      opacity: 0;
+      transition: all 0.2s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 200;
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── 팝업 ── */
+    .popup-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 100;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .popup-overlay.open { display: flex; }
+
+    .popup {
+      background: #181818;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px 16px 0 0;
+      padding: 20px 20px 32px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .popup-date { font-size: 12px; color: #555; margin-bottom: 12px; }
+
+    .popup-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      padding: 7px 0;
+      border-bottom: 1px solid #1e1e1e;
+    }
+
+    .popup-row:last-child { border-bottom: none; }
+    .popup-key { color: #666; }
+    .popup-val { color: #ccc; text-align: right; }
+    .popup-val.done { color: #52b788; }
+    .popup-val.skip { color: #333; }
+
+    .popup-close {
+      margin-top: 14px;
+      width: 100%;
+      padding: 13px;
+      background: #222;
+      border: none;
+      border-radius: 8px;
+      color: #777;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* ── 반응형 ── */
+    @media (max-width: 360px) {
+      .date-main { font-size: 15px; }
+      .routine-num { width: 46px; font-size: 14px; }
+      .plus-btn { font-size: 11px; padding: 5px 7px; }
+      .field-input { font-size: 16px; }
+      .btn { font-size: 12px; padding: 13px 6px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- 날짜 네비게이션 -->
+  <div class="date-nav">
+    <button class="nav-btn" onclick="changeDay(-1)">‹</button>
+    <div class="date-center">
+      <div class="date-main" id="dateMain"></div>
+      <div class="date-sub-row">
+        <span class="date-weekday" id="dateWeekday"></span>
+        <button class="today-btn" id="todayBtn" onclick="goToday()">오늘로</button>
+      </div>
+    </div>
+    <button class="nav-btn" onclick="changeDay(1)">›</button>
+  </div>
+
+  <!-- 수면 -->
+  <div class="section-title">수면</div>
+  <div class="sleep-row">
+    <div class="time-group">
+      <span class="time-label">취침시간</span>
+      <input class="time-input" id="sleepTime" type="text" inputmode="numeric"
+             placeholder="23:00" maxlength="5" oninput="autoColonTime(this)">
+      <div class="time-hint">전날 밤 · 24시간</div>
+    </div>
+    <div class="time-group">
+      <span class="time-label">기상시간</span>
+      <input class="time-input" id="wakeTime" type="text" inputmode="numeric"
+             placeholder="05:00" maxlength="5" oninput="autoColonTime(this)">
+      <div class="time-hint">24시간</div>
+    </div>
+  </div>
+
+  <!-- Daily 5 -->
+  <div class="section-title">Daily 5</div>
+  <div class="routines" id="routineList"></div>
+
+  <!-- 달리기 -->
+  <div class="section-title">달리기</div>
+  <div class="running-fields">
+    <div class="field-group">
+      <span class="field-label">거리</span>
+      <input class="field-input" id="runKm" type="number" step="0.01" min="0" placeholder="0.00">
+      <div class="field-unit">km</div>
+    </div>
+    <div class="field-group">
+      <span class="field-label">심박수</span>
+      <input class="field-input" id="runHr" type="number" min="0" placeholder="000">
+      <div class="field-unit">bpm</div>
+    </div>
+    <div class="field-group">
+      <span class="field-label">페이스</span>
+      <input class="field-input" id="runPace" type="text" placeholder="6:00">
+      <div class="field-unit">min/km</div>
+    </div>
+  </div>
+
+  <!-- 메모 -->
+  <div class="section-title">메모</div>
+  <textarea class="memo-input" id="memo" rows="3" placeholder="오늘의 컨디션, 특이사항..."></textarea>
+
+  <!-- 버튼 -->
+  <div class="btn-row">
+    <button class="btn btn-save" onclick="saveDay()">저장</button>
+    <button class="btn btn-export" onclick="exportData()">내보내기</button>
+    <button class="btn btn-import" onclick="importData()">가져오기</button>
+  </div>
+
+  <!-- 달력 -->
+  <div class="calendar-section">
+    <div class="section-title">기록 달력</div>
+    <div class="month-nav">
+      <button onclick="changeMonth(-1)">‹</button>
+      <span class="month-label" id="monthLabel"></span>
+      <button onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="popup-overlay" id="popupOverlay" onclick="closePopup(event)">
+  <div class="popup">
+    <div class="popup-date" id="popupDate"></div>
+    <div id="popupBody"></div>
+    <button class="popup-close" onclick="closePopup()">닫기</button>
+  </div>
+</div>
+
+<script>
+// ── 상수 ───────────────────────────────────────────
+const ROUTINES = [
+  { id: 'handstand', label: '물구나무', type: 'number', unit: '초',    step: 10, defaultVal: 20 },
+  { id: 'piano',     label: '피아노',   type: 'number', unit: '페이지', step: 1,  defaultVal: 2  },
+  { id: 'golf',      label: '골프 스윙', type: 'number', unit: '회',    step: 5,  defaultVal: 15 },
+  { id: 'hanging',   label: '행잉/그립', type: 'number', unit: '초',    step: 10, defaultVal: 20 },
+  { id: 'claude',    label: 'Claude 사용', type: 'toggle' },
+];
+
+const DAYS   = ['일','월','화','수','목','금','토'];
+const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+// ── 상태 ───────────────────────────────────────────
+const realToday  = new Date();
+let selectedDate = new Date();
+let values       = {};
+let calMonth     = { y: selectedDate.getFullYear(), m: selectedDate.getMonth() };
+let db           = JSON.parse(localStorage.getItem('routine_db') || '{}');
+
+// ── 키 ─────────────────────────────────────────────
+function dateToKey(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+function selectedKey() { return dateToKey(selectedDate); }
+function todayKey()    { return dateToKey(realToday); }
+function isViewingToday() { return selectedKey() === todayKey(); }
+
+// ── 날짜 이동 ──────────────────────────────────────
+function changeDay(delta) {
+  const d = new Date(selectedDate);
+  d.setDate(d.getDate() + delta);
+  selectedDate = d;
+  loadDate();
+}
+
+function goToday() {
+  selectedDate = new Date(realToday);
+  loadDate();
+}
+
+function loadDate() {
+  values = {};
+  clearForm();
+
+  const saved = db[selectedKey()];
+  if (saved) {
+    loadFromRecord(saved);
+  } else {
+    loadDefaults();
+  }
+
+  updateDateDisplay();
+  renderRoutines();
+  renderCalendar();
+}
+
+// ── 날짜 표시 ──────────────────────────────────────
+function updateDateDisplay() {
+  const d = selectedDate;
+  document.getElementById('dateMain').textContent =
+    `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+  document.getElementById('dateWeekday').textContent = DAYS[d.getDay()] + '요일';
+
+  const todayBtnEl = document.getElementById('todayBtn');
+  if (isViewingToday()) todayBtnEl.classList.remove('visible');
+  else todayBtnEl.classList.add('visible');
+}
+
+// ── 폼 초기화 ──────────────────────────────────────
+function clearForm() {
+  document.getElementById('sleepTime').value = '';
+  document.getElementById('wakeTime').value  = '';
+  document.getElementById('runKm').value     = '';
+  document.getElementById('runHr').value     = '';
+  document.getElementById('runPace').value   = '';
+  document.getElementById('memo').value      = '';
+}
+
+// ── 최근 기록에서 기본값 로드 ──────────────────────
+function loadDefaults() {
+  const key   = selectedKey();
+  const dates = Object.keys(db).filter(d => d < key).sort().reverse();
+  if (!dates.length) return;
+  const last = db[dates[0]];
+  if (!last || !last.routines) return;
+
+  ROUTINES.forEach(r => {
+    if (r.type !== 'number') return;
+    const v = last.routines[r.id];
+    values[r.id] = (v !== null && v !== undefined) ? v : r.defaultVal;
+  });
+}
+
+// ── 기록에서 폼 로드 ───────────────────────────────
+function loadFromRecord(rec) {
+  if (rec.sleepTime) document.getElementById('sleepTime').value = rec.sleepTime;
+  if (rec.wakeTime)  document.getElementById('wakeTime').value  = rec.wakeTime;
+  if (rec.memo)      document.getElementById('memo').value      = rec.memo;
+
+  if (rec.routines) {
+    ROUTINES.forEach(r => {
+      values[r.id] = rec.routines[r.id] ?? null;
+    });
+  }
+
+  if (rec.running) {
+    if (rec.running.km)        document.getElementById('runKm').value   = rec.running.km;
+    if (rec.running.heartRate) document.getElementById('runHr').value   = rec.running.heartRate;
+    if (rec.running.pace)      document.getElementById('runPace').value = rec.running.pace;
+  }
+}
+
+// ── 루틴 렌더링 ────────────────────────────────────
+function renderRoutines() {
+  const list = document.getElementById('routineList');
+  list.innerHTML = '';
+
+  ROUTINES.forEach(r => {
+    const done = isDone(r, values[r.id]);
+    const item = document.createElement('div');
+    item.className = 'routine-item' + (done ? ' done' : '') + (r.type === 'toggle' ? ' toggle-item' : '');
+    item.id = 'ri_' + r.id;
+
+    const circle = `<div class="check-circle"></div>`;
+    const label  = `<div class="routine-label">${r.label}</div>`;
+
+    let controls = '';
+    if (r.type === 'number') {
+      const v = values[r.id] ?? '';
+      controls = `
+        <div class="routine-controls">
+          <input class="routine-num" id="rn_${r.id}" type="number" min="0"
+            value="${v}" placeholder="${r.defaultVal}"
+            oninput="onNumInput('${r.id}', this.value)">
+          <span class="routine-unit">${r.unit}</span>
+          <button class="plus-btn" onclick="addValue('${r.id}', ${r.step})">+${r.step}</button>
+        </div>`;
+    } else {
+      item.onclick = () => toggleClaude();
+    }
+
+    item.innerHTML = circle + label + controls;
+    list.appendChild(item);
+  });
+}
+
+function isDone(r, val) {
+  if (r.type === 'toggle') return !!val;
+  return val !== undefined && val !== null && val !== '' && Number(val) > 0;
+}
+
+function onNumInput(id, val) {
+  values[id] = val === '' ? null : Number(val);
+  updateRoutineUI(id);
+}
+
+function addValue(id, step) {
+  const r   = ROUTINES.find(x => x.id === id);
+  const cur = values[id];
+  const base = (cur !== null && cur !== undefined && cur !== '') ? Number(cur) : (r.defaultVal || 0);
+  values[id] = base + step;
+  const inp = document.getElementById('rn_' + id);
+  if (inp) inp.value = values[id];
+  updateRoutineUI(id);
+}
+
+function updateRoutineUI(id) {
+  const r    = ROUTINES.find(x => x.id === id);
+  const item = document.getElementById('ri_' + id);
+  if (!item) return;
+  const done = isDone(r, values[id]);
+  item.className = 'routine-item' + (done ? ' done' : '') + (r.type === 'toggle' ? ' toggle-item' : '');
+}
+
+function toggleClaude() {
+  values['claude'] = !values['claude'];
+  updateRoutineUI('claude');
+}
+
+// ── 저장 ───────────────────────────────────────────
+function saveDay() {
+  const key = selectedKey();
+
+  const routineData = {};
+  ROUTINES.forEach(r => {
+    if (r.type === 'toggle') {
+      routineData[r.id] = !!values[r.id];
+    } else {
+      const v = values[r.id];
+      routineData[r.id] = (v !== null && v !== undefined && v !== '') ? Number(v) : null;
+    }
+  });
+
+  const km   = parseFloat(document.getElementById('runKm').value);
+  const hr   = parseInt(document.getElementById('runHr').value);
+  const pace = document.getElementById('runPace').value.trim();
+  const hasRun = km || hr || pace;
+
+  db[key] = {
+    date:      key,
+    sleepTime: document.getElementById('sleepTime').value || null,
+    wakeTime:  document.getElementById('wakeTime').value  || null,
+    routines:  routineData,
+    running:   hasRun ? { km: km || null, heartRate: hr || null, pace: pace || null } : null,
+    memo:      document.getElementById('memo').value.trim() || null,
+  };
+
+  localStorage.setItem('routine_db', JSON.stringify(db));
+  renderCalendar();
+  toast('저장했어요 ✓');
+}
+
+// ── 내보내기 ───────────────────────────────────────
+function exportData() {
+  const records = Object.values(db).sort((a, b) => a.date.localeCompare(b.date));
+  const payload = { exported_at: new Date().toISOString(), records };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const now  = new Date();
+  a.href     = url;
+  a.download = `routines_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('내보내기 완료');
+}
+
+// ── 가져오기 & 병합 ────────────────────────────────
+function importData() {
+  const input = document.createElement('input');
+  input.type   = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const file   = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const parsed  = JSON.parse(ev.target.result);
+        const records = parsed.records || (Array.isArray(parsed) ? parsed : Object.values(parsed));
+        let added = 0, skipped = 0;
+
+        records.forEach(rec => {
+          if (!rec.date) return;
+          if (db[rec.date]) { skipped++; }
+          else              { db[rec.date] = rec; added++; }
+        });
+
+        localStorage.setItem('routine_db', JSON.stringify(db));
+        renderCalendar();
+        toast(`${added}개 추가, ${skipped}개 중복 건너뜀`);
+      } catch {
+        toast('파일 형식 오류');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// ── 24시간 시간 입력 자동 콜론 ────────────────────
+function autoColonTime(input) {
+  let v = input.value.replace(/\D/g, '').slice(0, 4);
+  if (v.length >= 3) v = v.slice(0, 2) + ':' + v.slice(2);
+  input.value = v;
+}
+
+// ── 달력 ───────────────────────────────────────────
+function changeMonth(delta) {
+  calMonth.m += delta;
+  if (calMonth.m < 0)  { calMonth.m = 11; calMonth.y--; }
+  if (calMonth.m > 11) { calMonth.m = 0;  calMonth.y++; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const { y, m } = calMonth;
+  document.getElementById('monthLabel').textContent = `${y}년 ${MONTHS[m]}`;
+
+  const grid = document.getElementById('calendarGrid');
+  grid.innerHTML = '';
+
+  DAYS.forEach(d => {
+    const h = document.createElement('div');
+    h.className = 'cal-header';
+    h.textContent = d;
+    grid.appendChild(h);
+  });
+
+  const firstDay    = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const selKey      = selectedKey();
+  const tKey        = todayKey();
+
+  for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const cell    = document.createElement('div');
+    cell.className = 'cal-day'
+      + (dateStr === tKey   ? ' today-marker' : '')
+      + (dateStr === selKey ? ' selected' : '');
+
+    const num = document.createElement('div');
+    num.className = 'day-num';
+    num.textContent = d;
+    cell.appendChild(num);
+
+    const rec = db[dateStr];
+    if (rec) {
+      cell.classList.add('has-data');
+      const dots = document.createElement('div');
+      dots.className = 'dots';
+      const anyDone = ROUTINES.some(r => isDone(r, rec.routines?.[r.id]));
+      if (anyDone)    { const dot = document.createElement('div'); dot.className = 'dot';     dots.appendChild(dot); }
+      if (rec.running){ const dot = document.createElement('div'); dot.className = 'dot run'; dots.appendChild(dot); }
+      cell.appendChild(dots);
+      cell.onclick = () => {
+        // 달력에서 날짜 클릭 시 해당 날짜로 이동
+        selectedDate = new Date(dateStr + 'T00:00:00');
+        loadDate();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+    }
+
+    grid.appendChild(cell);
+  }
+}
+
+// ── 팝업 → 날짜 클릭 시 이동으로 대체됨 (팝업 제거) ──
+// 달력 날짜 클릭 = 해당 날짜 폼으로 이동
+function closePopup(e) {
+  if (!e || e.target === document.getElementById('popupOverlay')) {
+    document.getElementById('popupOverlay').classList.remove('open');
+  }
+}
+
+// ── 토스트 ─────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ── 시작 ───────────────────────────────────────────
+updateDateDisplay();
+loadDate();
+</script>
+</body>
+</html>
