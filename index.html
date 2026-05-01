@@ -136,6 +136,7 @@
       flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
       transition: all 0.15s;
+      cursor: pointer;
     }
 
     .routine-item.done .check-circle { background: #40916c; border-color: #40916c; }
@@ -634,6 +635,7 @@ function renderRoutines() {
     let controls = '';
     if (r.type === 'number') {
       const v = values[r.id] ?? '';
+      const circleClickable = `<div class="check-circle" onclick="checkToggle('${r.id}')"></div>`;
       controls = `
         <div class="routine-controls">
           <input class="routine-num" id="rn_${r.id}" type="number" min="0"
@@ -642,11 +644,11 @@ function renderRoutines() {
           <span class="routine-unit">${r.unit}</span>
           <button class="plus-btn" onclick="addValue('${r.id}', ${r.step})">+${r.step}</button>
         </div>`;
+      item.innerHTML = circleClickable + label + controls;
     } else {
       item.onclick = () => toggleClaude();
+      item.innerHTML = circle + label + controls;
     }
-
-    item.innerHTML = circle + label + controls;
     list.appendChild(item);
   });
 }
@@ -682,6 +684,19 @@ function updateRoutineUI(id) {
 function toggleClaude() {
   values['claude'] = !values['claude'];
   updateRoutineUI('claude');
+}
+
+function checkToggle(id) {
+  const r   = ROUTINES.find(x => x.id === id);
+  const cur = values[id];
+  if (isDone(r, cur)) {
+    values[id] = null;
+  } else {
+    values[id] = r.defaultVal;
+  }
+  const inp = document.getElementById('rn_' + id);
+  if (inp) inp.value = values[id] ?? '';
+  updateRoutineUI(id);
 }
 
 // ── 저장 ───────────────────────────────────────────
