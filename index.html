@@ -548,15 +548,13 @@ function goToday() {
 }
 
 function loadDate() {
-  values = {};
+  values    = {};
+  prefilled = {};
   clearForm();
+  loadPrefilled();
 
   const saved = db[selectedKey()];
-  if (saved) {
-    loadFromRecord(saved);
-  } else {
-    loadDefaults();
-  }
+  if (saved) loadFromRecord(saved);
 
   updateDateDisplay();
   renderRoutines();
