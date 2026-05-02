@@ -520,7 +520,8 @@ const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','
 // ── 상태 ───────────────────────────────────────────
 const realToday  = new Date();
 let selectedDate = new Date();
-let values       = {};
+let values       = {};   // 사용자가 확정한 값 (체크 ON 상태)
+let prefilled    = {};   // 전날 값 또는 기본값 (입력 필드에 표시, 체크 OFF)
 let calMonth     = { y: selectedDate.getFullYear(), m: selectedDate.getMonth() };
 let db           = JSON.parse(localStorage.getItem('routine_db') || '{}');
 
