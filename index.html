@@ -584,19 +584,19 @@ function clearForm() {
   document.getElementById('memo').value      = '';
 }
 
-// ── 최근 기록에서 기본값 로드 ──────────────────────
-function loadDefaults() {
+// ── 전날 기록값 조회 ───────────────────────────────
+function getPrevDayValue(id) {
   const key   = selectedKey();
   const dates = Object.keys(db).filter(d => d < key).sort().reverse();
-  if (!dates.length) return;
+  if (!dates.length) return null;
   const last = db[dates[0]];
-  if (!last || !last.routines) return;
+  if (!last || !last.routines) return null;
+  const v = last.routines[id];
+  return (v !== null && v !== undefined) ? v : null;
+}
 
-  ROUTINES.forEach(r => {
-    if (r.type !== 'number') return;
-    const v = last.routines[r.id];
-    values[r.id] = (v !== null && v !== undefined) ? v : r.defaultVal;
-  });
+function loadDefaults() {
+  // 새 날짜는 빈 상태로 시작 — 체크박스 터치 시 전날 값 적용
 }
 
 // ── 기록에서 폼 로드 ───────────────────────────────
