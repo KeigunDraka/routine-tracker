@@ -660,9 +660,9 @@ function onNumInput(id, val) {
 }
 
 function addValue(id, step) {
-  const r   = ROUTINES.find(x => x.id === id);
-  const cur = values[id];
-  const base = (cur !== null && cur !== undefined && cur !== '') ? Number(cur) : (r.defaultVal || 0);
+  const r    = ROUTINES.find(x => x.id === id);
+  const cur  = values[id];
+  const base = (cur !== null && cur !== undefined && cur !== '') ? Number(cur) : (prefilled[id] ?? r.defaultVal ?? 0);
   values[id] = base + step;
   const inp = document.getElementById('rn_' + id);
   if (inp) inp.value = values[id];
