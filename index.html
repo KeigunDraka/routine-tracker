@@ -630,7 +630,7 @@ function renderRoutines() {
 
     let controls = '';
     if (r.type === 'number') {
-      const v = values[r.id] ?? '';
+      const v = values[r.id] ?? prefilled[r.id] ?? '';
       const circleClickable = `<div class="check-circle" onclick="checkToggle('${r.id}')"></div>`;
       controls = `
         <div class="routine-controls">
