@@ -688,10 +688,10 @@ function checkToggle(id) {
   if (isDone(r, cur)) {
     values[id] = null;
   } else {
-    values[id] = r.defaultVal;
+    values[id] = prefilled[id] ?? r.defaultVal;
   }
   const inp = document.getElementById('rn_' + id);
-  if (inp) inp.value = values[id] ?? '';
+  if (inp) inp.value = values[id] ?? prefilled[id] ?? '';
   updateRoutineUI(id);
 }
 
