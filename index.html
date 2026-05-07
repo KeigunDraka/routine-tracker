@@ -12,7 +12,7 @@
       background: #0f0f0f;
       color: #e8e8e8;
       min-height: 100vh;
-      padding: 20px 14px 48px;
+      padding: 12px 14px 24px;
     }
 
     .container { max-width: 480px; margin: 0 auto; }
@@ -72,8 +72,8 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: #444;
-      margin-bottom: 10px;
-      margin-top: 28px;
+      margin-bottom: 8px;
+      margin-top: 16px;
     }
 
     /* ── 수면 ── */
@@ -87,29 +87,29 @@
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
       border-radius: 10px;
-      padding: 12px 14px;
+      padding: 9px 12px;
     }
 
-    .time-label { font-size: 11px; color: #555; margin-bottom: 6px; display: block; }
+    .time-label { font-size: 11px; color: #555; margin-bottom: 4px; display: block; }
 
     .time-input {
       background: transparent;
       border: none;
       outline: none;
       color: #fff;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 500;
       width: 100%;
       font-family: inherit;
       letter-spacing: 0.02em;
     }
 
-    .time-input::placeholder { color: #2a2a2a; font-size: 20px; }
+    .time-input::placeholder { color: #2a2a2a; font-size: 18px; }
 
-    .time-hint { font-size: 10px; color: #333; margin-top: 3px; }
+    .time-hint { font-size: 10px; color: #333; margin-top: 2px; }
 
     /* ── 루틴 ── */
-    .routines { display: flex; flex-direction: column; gap: 8px; }
+    .routines { display: flex; flex-direction: column; gap: 6px; }
 
     .routine-item {
       display: flex;
@@ -118,7 +118,7 @@
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
       border-radius: 10px;
-      padding: 11px 14px;
+      padding: 8px 12px;
       transition: border-color 0.15s, background 0.15s;
     }
 
@@ -193,7 +193,7 @@
       padding: 5px 9px;
       cursor: pointer;
       white-space: nowrap;
-      min-height: 32px;
+      min-height: 30px;
     }
 
     .plus-btn:active { background: #243a2e; }
@@ -209,24 +209,24 @@
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
       border-radius: 10px;
-      padding: 12px 12px 10px;
+      padding: 8px 10px 6px;
     }
 
-    .field-label { font-size: 11px; color: #555; margin-bottom: 6px; display: block; }
+    .field-label { font-size: 11px; color: #555; margin-bottom: 4px; display: block; }
 
     .field-input {
       background: transparent;
       border: none;
       outline: none;
       color: #fff;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 500;
       width: 100%;
       font-family: inherit;
     }
 
     .field-input::placeholder { color: #2a2a2a; }
-    .field-unit { font-size: 10px; color: #444; margin-top: 3px; }
+    .field-unit { font-size: 10px; color: #444; margin-top: 2px; }
 
     /* ── 메모 ── */
     .memo-input {
@@ -234,7 +234,7 @@
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
       border-radius: 10px;
-      padding: 13px 14px;
+      padding: 9px 12px;
       color: #ccc;
       font-size: 14px;
       font-family: inherit;
@@ -247,18 +247,18 @@
     .memo-input::placeholder { color: #2a2a2a; }
 
     /* ── 버튼 ── */
-    .btn-row { display: flex; gap: 8px; margin-top: 28px; }
+    .btn-row { display: flex; gap: 8px; margin-top: 16px; }
 
     .btn {
       flex: 1;
-      padding: 14px 8px;
+      padding: 10px 8px;
       border-radius: 10px;
       border: none;
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       font-family: inherit;
-      min-height: 48px;
+      min-height: 42px;
     }
 
     .btn-save { background: #40916c; color: #fff; }
@@ -313,10 +313,13 @@
       color: #444;
       position: relative;
       gap: 2px;
+      cursor: pointer;
     }
 
-    .cal-day.has-data { cursor: pointer; color: #888; }
-    .cal-day.has-data:active { background: #1a1a1a; }
+    .cal-day:active { background: #1a1a1a; }
+    .cal-day.empty { cursor: default; }
+
+    .cal-day.has-data { color: #888; }
 
     .cal-day.selected { background: #1a1a1a; border: 1px solid #333; }
 
@@ -408,8 +411,8 @@
       .date-main { font-size: 15px; }
       .routine-num { width: 46px; font-size: 14px; }
       .plus-btn { font-size: 11px; padding: 5px 7px; }
-      .field-input { font-size: 16px; }
-      .btn { font-size: 12px; padding: 13px 6px; }
+      .field-input { font-size: 15px; }
+      .btn { font-size: 12px; padding: 9px 6px; }
     }
   </style>
 </head>
@@ -472,7 +475,7 @@
 
   <!-- 메모 -->
   <div class="section-title">메모</div>
-  <textarea class="memo-input" id="memo" rows="3" placeholder="오늘의 컨디션, 특이사항..."></textarea>
+  <textarea class="memo-input" id="memo" rows="2" placeholder="오늘의 컨디션, 특이사항..."></textarea>
 
   <!-- 버튼 -->
   <div class="btn-row">
@@ -507,10 +510,10 @@
 <script>
 // ── 상수 ───────────────────────────────────────────
 const ROUTINES = [
-  { id: 'handstand', label: '물구나무', type: 'number', unit: '초',    step: 10, defaultVal: 20 },
+  { id: 'handstand', label: '물구나무', type: 'number', unit: '초',    step: 5,  defaultVal: 20 },
   { id: 'piano',     label: '피아노',   type: 'number', unit: '페이지', step: 1,  defaultVal: 2  },
   { id: 'golf',      label: '골프 스윙', type: 'number', unit: '회',    step: 5,  defaultVal: 15 },
-  { id: 'hanging',   label: '행잉/그립', type: 'number', unit: '초',    step: 10, defaultVal: 20 },
+  { id: 'hanging',   label: '행잉',     type: 'number', unit: '초',    step: 5,  defaultVal: 20 },
   { id: 'claude',    label: 'Claude 사용', type: 'toggle' },
 ];
 
@@ -520,8 +523,8 @@ const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','
 // ── 상태 ───────────────────────────────────────────
 const realToday  = new Date();
 let selectedDate = new Date();
-let values       = {};   // 사용자가 확정한 값 (체크 ON 상태)
-let prefilled    = {};   // 전날 값 또는 기본값 (입력 필드에 표시, 체크 OFF)
+let values       = {};
+let prefilled    = {};
 let calMonth     = { y: selectedDate.getFullYear(), m: selectedDate.getMonth() };
 let db           = JSON.parse(localStorage.getItem('routine_db') || '{}');
 
@@ -810,7 +813,11 @@ function renderCalendar() {
   const selKey      = selectedKey();
   const tKey        = todayKey();
 
-  for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
+  for (let i = 0; i < firstDay; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'cal-day empty';
+    grid.appendChild(empty);
+  }
 
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -833,20 +840,62 @@ function renderCalendar() {
       if (anyDone)    { const dot = document.createElement('div'); dot.className = 'dot';     dots.appendChild(dot); }
       if (rec.running){ const dot = document.createElement('div'); dot.className = 'dot run'; dots.appendChild(dot); }
       cell.appendChild(dots);
-      cell.onclick = () => {
-        // 달력에서 날짜 클릭 시 해당 날짜로 이동
-        selectedDate = new Date(dateStr + 'T00:00:00');
-        loadDate();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      };
     }
 
+    cell.onclick = () => showPopup(dateStr);
     grid.appendChild(cell);
   }
 }
 
-// ── 팝업 → 날짜 클릭 시 이동으로 대체됨 (팝업 제거) ──
-// 달력 날짜 클릭 = 해당 날짜 폼으로 이동
+// ── 팝업 ───────────────────────────────────────────
+function showPopup(dateStr) {
+  const rec = db[dateStr];
+  const d   = new Date(dateStr + 'T00:00:00');
+  document.getElementById('popupDate').textContent =
+    `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${DAYS[d.getDay()]})`;
+
+  const body = document.getElementById('popupBody');
+
+  if (!rec) {
+    body.innerHTML = '<div class="popup-row"><span class="popup-key" style="color:#444">기록 없음</span></div>';
+  } else {
+    let html = '';
+
+    if (rec.sleepTime || rec.wakeTime) {
+      html += `<div class="popup-row"><span class="popup-key">취침</span><span class="popup-val">${rec.sleepTime || '—'}</span></div>`;
+      html += `<div class="popup-row"><span class="popup-key">기상</span><span class="popup-val">${rec.wakeTime || '—'}</span></div>`;
+    }
+
+    ROUTINES.forEach(r => {
+      const val  = rec.routines?.[r.id];
+      const done = isDone(r, val);
+      if (r.type === 'toggle') {
+        html += `<div class="popup-row"><span class="popup-key">${r.label}</span><span class="popup-val ${done ? 'done' : 'skip'}">${done ? '✓' : '—'}</span></div>`;
+      } else {
+        html += `<div class="popup-row"><span class="popup-key">${r.label}</span><span class="popup-val ${done ? 'done' : 'skip'}">${val != null ? val + ' ' + r.unit : '—'}</span></div>`;
+      }
+    });
+
+    if (rec.running) {
+      const run   = rec.running;
+      const parts = [
+        run.km        ? run.km + 'km'        : '',
+        run.heartRate ? run.heartRate + 'bpm' : '',
+        run.pace      ? run.pace + '/km'      : '',
+      ].filter(Boolean).join(' · ');
+      if (parts) html += `<div class="popup-row"><span class="popup-key">달리기</span><span class="popup-val done">${parts}</span></div>`;
+    }
+
+    if (rec.memo) {
+      html += `<div class="popup-row" style="flex-direction:column;align-items:flex-start;gap:4px"><span class="popup-key">메모</span><span style="font-size:12px;color:#888;line-height:1.5">${rec.memo}</span></div>`;
+    }
+
+    body.innerHTML = html || '<div class="popup-row"><span class="popup-key" style="color:#444">기록 없음</span></div>';
+  }
+
+  document.getElementById('popupOverlay').classList.add('open');
+}
+
 function closePopup(e) {
   if (!e || e.target === document.getElementById('popupOverlay')) {
     document.getElementById('popupOverlay').classList.remove('open');
