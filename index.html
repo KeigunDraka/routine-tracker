@@ -228,6 +228,38 @@
     .field-input::placeholder { color: #2a2a2a; }
     .field-unit { font-size: 10px; color: #444; margin-top: 2px; }
 
+    /* ── 리비전 배지 ── */
+    .section-title-row { display: flex; align-items: center; justify-content: space-between; }
+    .rev-badge { font-size: 10px; color: #404040; font-weight: 500; text-transform: none; letter-spacing: 0.05em; }
+
+    /* ── 달리기 카드 ── */
+    .running-card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 8px 12px 10px;
+      transition: border-color 0.15s, background 0.15s;
+      margin-top: 16px;
+    }
+    .running-card.done { border-color: #2d6a4f; background: #0d1f17; }
+    .running-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .running-card-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: #444;
+    }
+    .running-card.done .running-card-label { color: #52b788; }
+    .running-card.done .run-check { background: #40916c; border-color: #40916c; }
+    .running-card.done .run-check::after { opacity: 1; }
+    .run-check::after {
+      content: '';
+      width: 4px; height: 8px;
+      border: 2px solid #fff;
+      border-top: none; border-left: none;
+      transform: rotate(45deg) translateY(-1px);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
     /* ── 메모 ── */
     .memo-input {
       width: 100%;
@@ -569,7 +601,9 @@
   </div>
 
   <!-- 수면 -->
-  <div class="section-title">수면</div>
+  <div class="section-title section-title-row">
+    <span>수면</span><span class="rev-badge">Rev. 3</span>
+  </div>
   <div class="sleep-row">
     <div class="time-group">
       <span class="time-label">취침시간</span>
@@ -590,22 +624,27 @@
   <div class="routines" id="routineList"></div>
 
   <!-- 달리기 -->
-  <div class="section-title">달리기</div>
-  <div class="running-fields">
-    <div class="field-group">
-      <span class="field-label">거리</span>
-      <input class="field-input" id="runKm" type="number" step="0.01" min="0" placeholder="0.00">
-      <div class="field-unit">km</div>
+  <div class="running-card" id="runningCard">
+    <div class="running-card-top">
+      <div class="check-circle run-check"></div>
+      <span class="running-card-label">달리기</span>
     </div>
-    <div class="field-group">
-      <span class="field-label">심박수</span>
-      <input class="field-input" id="runHr" type="number" min="0" placeholder="000">
-      <div class="field-unit">bpm</div>
-    </div>
-    <div class="field-group">
-      <span class="field-label">페이스</span>
-      <input class="field-input" id="runPace" type="text" placeholder="6:00" inputmode="numeric" oninput="autoColonPace(this)">
-      <div class="field-unit">min/km</div>
+    <div class="running-fields">
+      <div class="field-group">
+        <span class="field-label">거리</span>
+        <input class="field-input" id="runKm" type="number" step="0.01" min="0" placeholder="0.00" oninput="updateRunUI()">
+        <div class="field-unit">km</div>
+      </div>
+      <div class="field-group">
+        <span class="field-label">심박수</span>
+        <input class="field-input" id="runHr" type="number" min="0" placeholder="000" oninput="updateRunUI()">
+        <div class="field-unit">bpm</div>
+      </div>
+      <div class="field-group">
+        <span class="field-label">페이스</span>
+        <input class="field-input" id="runPace" type="text" placeholder="6:00" inputmode="numeric" oninput="autoColonPace(this); updateRunUI()">
+        <div class="field-unit">min/km</div>
+      </div>
     </div>
   </div>
 
@@ -750,6 +789,7 @@ function clearForm() {
   document.getElementById('runHr').value     = '';
   document.getElementById('runPace').value   = '';
   document.getElementById('memo').value      = '';
+  updateRunUI();
 }
 
 // ── 전날 값 또는 기본값을 prefilled에 설정 ─────────
@@ -781,6 +821,7 @@ function loadFromRecord(rec) {
     if (rec.running.heartRate) document.getElementById('runHr').value   = rec.running.heartRate;
     if (rec.running.pace)      document.getElementById('runPace').value = rec.running.pace;
   }
+  updateRunUI();
 }
 
 // ── 루틴 렌더링 ────────────────────────────────────
@@ -950,6 +991,13 @@ function autoColonTime(input) {
   let v = input.value.replace(/\D/g, '').slice(0, 4);
   if (v.length >= 3) v = v.slice(0, 2) + ':' + v.slice(2);
   input.value = v;
+}
+
+function updateRunUI() {
+  const done = !!(document.getElementById('runKm').value ||
+                  document.getElementById('runHr').value ||
+                  document.getElementById('runPace').value);
+  document.getElementById('runningCard').classList.toggle('done', done);
 }
 
 function autoColonPace(input) {
