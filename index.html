@@ -264,6 +264,7 @@
     .btn-save { background: #40916c; color: #fff; }
     .btn-save:active { background: #357a5a; }
 
+    .btn-report { background: #1f1a2e; color: #b094f5; border: 1px solid #3d2a6a; }
     .btn-export { background: #1a2a3a; color: #6aafd6; border: 1px solid #1e3a5f; }
     .btn-import { background: #1a1a2a; color: #8a8adc; border: 1px solid #2a2a4a; }
 
@@ -406,6 +407,139 @@
       font-family: inherit;
     }
 
+    /* ── 리포트 오버레이 ── */
+    .report-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #0f0f0f;
+      z-index: 150;
+      overflow-y: auto;
+      padding: 14px 8px 32px;
+    }
+
+    .report-overlay.open { display: block; }
+
+    .report-wrap { max-width: 480px; margin: 0 auto; }
+
+    .report-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .report-title-wrap {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex: 1;
+      padding: 0 10px;
+    }
+
+    .report-month-label { font-size: 26px; font-weight: 900; color: #fff; letter-spacing: -0.01em; }
+
+    .report-subtitle { font-size: 10px; color: #555; letter-spacing: 0.18em; font-weight: 600; }
+
+    /* 범례 */
+    .rcal-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px 12px;
+      justify-content: center;
+      padding: 0 0 10px;
+      font-size: 10px;
+      color: #666;
+    }
+
+    .rcal-legend-item { display: flex; align-items: center; gap: 4px; }
+
+    .rcal-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .dot-hs  { background: #4a9eda; }
+    .dot-h   { background: #9d7cd8; }
+    .dot-p   { background: #26a69a; }
+    .dot-gs  { background: #66bb6a; }
+    .dot-tw  { background: #f0a030; }
+    .dot-run { background: #ef5350; }
+
+    /* 달력 그리드 */
+    .rcal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      border-left: 1px solid #1e1e1e;
+      border-top: 1px solid #1e1e1e;
+    }
+
+    .rcal-header {
+      text-align: center;
+      font-size: 9px;
+      color: #666;
+      padding: 5px 0;
+      border-right: 1px solid #1e1e1e;
+      border-bottom: 1px solid #1e1e1e;
+      letter-spacing: 0.05em;
+    }
+
+    .rcal-sat-hdr { color: #4a6a8a; }
+
+    .rcal-cell {
+      min-height: 68px;
+      padding: 3px 3px 4px;
+      border-right: 1px solid #1e1e1e;
+      border-bottom: 1px solid #1e1e1e;
+      word-break: break-all;
+    }
+
+    .rcal-empty { background: transparent; }
+
+    .rcal-today {
+      background: #0a141f;
+      border-right-color: #1e3a5f;
+      border-bottom-color: #1e3a5f;
+    }
+
+    .rcal-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 2px;
+    }
+
+    .rcal-time-col { font-size: 7.5px; line-height: 1.35; flex: 1; min-width: 0; }
+
+    .rcal-date { font-size: 10px; color: #444; text-align: right; line-height: 1.2; flex-shrink: 0; padding-left: 2px; }
+    .rcal-sat-cell .rcal-date { color: #4a6a8a; }
+    .rcal-today-date { color: #6aafd6; font-weight: 700; }
+
+    .rcal-row { display: flex; flex-wrap: wrap; gap: 2px; margin-bottom: 1px; line-height: 1.3; }
+
+    .rcal-hs { font-size: 8px; color: #4a9eda; font-weight: 600; }
+    .rcal-h  { font-size: 8px; color: #9d7cd8; font-weight: 600; }
+    .rcal-p  { font-size: 8px; color: #26a69a; font-weight: 600; }
+    .rcal-gs { font-size: 8px; color: #66bb6a; font-weight: 600; }
+    .rcal-tw { font-size: 8px; color: #f0a030; font-weight: 600; }
+
+    .rcal-run { font-size: 7.5px; color: #ef5350; margin-top: 1px; line-height: 1.3; }
+    .rcal-run-inline { color: #ef5350; }
+
+    .report-empty { text-align: center; color: #444; font-size: 14px; padding: 48px 0; }
+
+    .report-close-btn {
+      width: 100%;
+      padding: 13px;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      color: #888;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      margin-top: 16px;
+    }
+
+    .report-close-btn:active { background: #222; }
+
     /* ── 반응형 ── */
     @media (max-width: 360px) {
       .date-main { font-size: 15px; }
@@ -468,7 +602,7 @@
     </div>
     <div class="field-group">
       <span class="field-label">페이스</span>
-      <input class="field-input" id="runPace" type="text" placeholder="6:00">
+      <input class="field-input" id="runPace" type="text" placeholder="6:00" inputmode="numeric" oninput="autoColonPace(this)">
       <div class="field-unit">min/km</div>
     </div>
   </div>
@@ -480,6 +614,7 @@
   <!-- 버튼 -->
   <div class="btn-row">
     <button class="btn btn-save" onclick="saveDay()">저장</button>
+    <button class="btn btn-report" onclick="showReport()">리포트</button>
     <button class="btn btn-export" onclick="exportData()">내보내기</button>
     <button class="btn btn-import" onclick="importData()">가져오기</button>
   </div>
@@ -499,6 +634,21 @@
 
 <div class="toast" id="toast"></div>
 
+<div class="report-overlay" id="reportOverlay">
+  <div class="report-wrap">
+    <div class="report-header">
+      <button class="nav-btn" onclick="changeReportMonth(-1)">‹</button>
+      <div class="report-title-wrap">
+        <span class="report-month-label" id="reportMonthLabel"></span>
+        <span class="report-subtitle">DAILY ROUTINE</span>
+      </div>
+      <button class="nav-btn" onclick="changeReportMonth(1)">›</button>
+    </div>
+    <div id="reportBody"></div>
+    <button class="report-close-btn" onclick="closeReport()">닫기</button>
+  </div>
+</div>
+
 <div class="popup-overlay" id="popupOverlay" onclick="closePopup(event)">
   <div class="popup">
     <div class="popup-date" id="popupDate"></div>
@@ -514,7 +664,7 @@ const ROUTINES = [
   { id: 'piano',     label: '피아노',   type: 'number', unit: '페이지', step: 1,  defaultVal: 2  },
   { id: 'golf',      label: '골프 스윙', type: 'number', unit: '회',    step: 5,  defaultVal: 15 },
   { id: 'hanging',   label: '행잉',     type: 'number', unit: '초',    step: 5,  defaultVal: 20 },
-  { id: 'claude',    label: 'Claude 사용', type: 'toggle' },
+  { id: 'twitter',   label: 'X 글올리기',  type: 'toggle' },
 ];
 
 const DAYS   = ['일','월','화','수','목','금','토'];
@@ -527,6 +677,20 @@ let values       = {};
 let prefilled    = {};
 let calMonth     = { y: selectedDate.getFullYear(), m: selectedDate.getMonth() };
 let db           = JSON.parse(localStorage.getItem('routine_db') || '{}');
+let reportMonth  = { y: new Date().getFullYear(), m: new Date().getMonth() };
+
+// claude → twitter 마이그레이션
+(function() {
+  let changed = false;
+  Object.values(db).forEach(rec => {
+    if (rec.routines && 'claude' in rec.routines && !('twitter' in rec.routines)) {
+      rec.routines.twitter = rec.routines.claude;
+      delete rec.routines.claude;
+      changed = true;
+    }
+  });
+  if (changed) localStorage.setItem('routine_db', JSON.stringify(db));
+})();
 
 // ── 키 ─────────────────────────────────────────────
 function dateToKey(d) {
@@ -645,7 +809,7 @@ function renderRoutines() {
         </div>`;
       item.innerHTML = circleClickable + label + controls;
     } else {
-      item.onclick = () => toggleClaude();
+      item.onclick = () => toggleItem(r.id);
       item.innerHTML = circle + label + controls;
     }
     list.appendChild(item);
@@ -680,9 +844,9 @@ function updateRoutineUI(id) {
   item.className = 'routine-item' + (done ? ' done' : '') + (r.type === 'toggle' ? ' toggle-item' : '');
 }
 
-function toggleClaude() {
-  values['claude'] = !values['claude'];
-  updateRoutineUI('claude');
+function toggleItem(id) {
+  values[id] = !values[id];
+  updateRoutineUI(id);
 }
 
 function checkToggle(id) {
@@ -783,6 +947,12 @@ function importData() {
 function autoColonTime(input) {
   let v = input.value.replace(/\D/g, '').slice(0, 4);
   if (v.length >= 3) v = v.slice(0, 2) + ':' + v.slice(2);
+  input.value = v;
+}
+
+function autoColonPace(input) {
+  let v = input.value.replace(/\D/g, '').slice(0, 4);
+  if (v.length >= 3) v = v.slice(0, v.length - 2) + ':' + v.slice(-2);
   input.value = v;
 }
 
@@ -908,6 +1078,175 @@ function toast(msg) {
   el.textContent = msg;
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ── 리포트 ────────────────────────────────────────
+function showReport() {
+  reportMonth = { y: new Date().getFullYear(), m: new Date().getMonth() };
+  renderReport();
+  document.getElementById('reportOverlay').classList.add('open');
+}
+
+function closeReport() {
+  document.getElementById('reportOverlay').classList.remove('open');
+}
+
+function changeReportMonth(delta) {
+  reportMonth.m += delta;
+  if (reportMonth.m < 0)  { reportMonth.m = 11; reportMonth.y--; }
+  if (reportMonth.m > 11) { reportMonth.m = 0;  reportMonth.y++; }
+  renderReport();
+}
+
+function renderReport() {
+  const { y, m } = reportMonth;
+  const MONTH_EN = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE',
+                    'JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+  document.getElementById('reportMonthLabel').textContent = `${MONTH_EN[m]} ${y}`;
+
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const firstDay    = new Date(y, m, 1).getDay();
+  const body        = document.getElementById('reportBody');
+  const tKey        = todayKey();
+
+  // 범례
+  const RMETA = [
+    { id: 'handstand', abbr: 'HS', dot: 'dot-hs', cls: 'rcal-hs', label: 'Handstand' },
+    { id: 'hanging',   abbr: 'H',  dot: 'dot-h',  cls: 'rcal-h',  label: 'Hanging'   },
+    { id: 'piano',     abbr: 'P',  dot: 'dot-p',  cls: 'rcal-p',  label: 'Piano'     },
+    { id: 'golf',      abbr: 'GS', dot: 'dot-gs', cls: 'rcal-gs', label: 'Golf'      },
+    { id: 'twitter',   abbr: 'X',  dot: 'dot-tw', cls: 'rcal-tw', label: 'X Post'    },
+  ];
+
+  let legend = '<div class="rcal-legend">';
+  RMETA.forEach(r => {
+    legend += `<span class="rcal-legend-item"><span class="rcal-dot ${r.dot}"></span><span class="${r.cls}">${r.abbr}</span> ${r.label}</span>`;
+  });
+  legend += `<span class="rcal-legend-item"><span class="rcal-dot dot-run"></span><span class="rcal-run-inline">RUN</span> Running</span>`;
+  legend += '</div>';
+
+  // 달력 그리드
+  let grid = '<div class="rcal-grid">';
+  ['SUN','MON','TUE','WED','THU','FRI','SAT'].forEach((d, i) => {
+    grid += `<div class="rcal-header${i === 6 ? ' rcal-sat-hdr' : ''}">${d}</div>`;
+  });
+
+  for (let i = 0; i < firstDay; i++) {
+    grid += '<div class="rcal-cell rcal-empty"></div>';
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const rec     = db[dateStr];
+    const isToday = dateStr === tKey;
+    const isSat   = new Date(y, m, d).getDay() === 6;
+
+    grid += `<div class="rcal-cell${isToday ? ' rcal-today' : ''}${isSat ? ' rcal-sat-cell' : ''}">`;
+
+    // 상단 행: 취침/기상 시간(왼쪽) + 날짜(오른쪽)
+    grid += '<div class="rcal-top-row">';
+    grid += '<div class="rcal-time-col">';
+    if (rec) {
+      let timeLine = '';
+      if (rec.sleepTime) {
+        const c = timeDeviationColor(rec.sleepTime, 21, 0, true);
+        timeLine += `<span style="color:${c}">${rec.sleepTime}</span>`;
+      }
+      if (rec.wakeTime) {
+        const c = timeDeviationColor(rec.wakeTime, 5, 0, false);
+        if (timeLine) timeLine += ' ';
+        timeLine += `<span style="color:${c}">${rec.wakeTime}</span>`;
+      }
+      if (timeLine) grid += `<div>${timeLine}</div>`;
+    }
+    grid += '</div>';
+    grid += `<div class="rcal-date${isToday ? ' rcal-today-date' : ''}">${d}</div>`;
+    grid += '</div>';
+
+    if (rec) {
+
+      const hs = rec.routines?.handstand;
+      const h  = rec.routines?.hanging;
+      if (hs || h) {
+        grid += '<div class="rcal-row">';
+        if (hs) grid += `<span class="rcal-hs">HS${hs}</span>`;
+        if (h)  grid += `<span class="rcal-h">H${h}</span>`;
+        grid += '</div>';
+      }
+
+      const p  = rec.routines?.piano;
+      const gs = rec.routines?.golf;
+      if (p || gs) {
+        grid += '<div class="rcal-row">';
+        if (p)  grid += `<span class="rcal-p">P${p}</span>`;
+        if (gs) grid += `<span class="rcal-gs">GS${gs}</span>`;
+        grid += '</div>';
+      }
+
+      if (rec.routines?.twitter) {
+        grid += `<div class="rcal-row"><span class="rcal-tw">X✓</span></div>`;
+      }
+
+      if (rec.running) {
+        const km   = rec.running.km        ? `${rec.running.km}k`        : '';
+        const pace = rec.running.pace      ? `${rec.running.pace}`        : '';
+        const hr   = rec.running.heartRate ? `${rec.running.heartRate}♥` : '';
+        const parts = [km, pace, hr].filter(Boolean).join(' ');
+        if (parts) grid += `<div class="rcal-run">▶${parts}</div>`;
+      }
+    }
+
+    grid += '</div>';
+  }
+
+  grid += '</div>';
+  body.innerHTML = legend + grid;
+}
+
+// 기준 시간 대비 편차 → green(140)~red(0) HSL 색상
+// isSleep: true면 자정 이후 시간을 24시간대로 보정
+function timeDeviationColor(timeStr, targetH, targetM, isSleep) {
+  if (!timeStr) return '#3a3a3a';
+  const p = timeStr.split(':');
+  if (p.length !== 2) return '#3a3a3a';
+  let h = parseInt(p[0]), mn = parseInt(p[1]);
+  if (isNaN(h) || isNaN(mn)) return '#3a3a3a';
+  let actual = h * 60 + mn;
+  if (isSleep && h < 12) actual += 24 * 60; // 00:xx → 24:xx
+  const deviation = Math.min(Math.abs(actual - (targetH * 60 + targetM)), 180);
+  const hue = Math.round(140 * (1 - deviation / 60));
+  return `hsl(${hue},65%,45%)`;
+}
+
+function paceToSecs(paceStr) {
+  if (!paceStr) return null;
+  const p = paceStr.split(':');
+  if (p.length !== 2) return null;
+  const m = parseInt(p[0]), s = parseInt(p[1]);
+  return (isNaN(m) || isNaN(s)) ? null : m * 60 + s;
+}
+
+function secsToMinKm(totalSecs) {
+  const m = Math.floor(totalSecs / 60);
+  const s = Math.round(totalSecs % 60);
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function timeStrToMins(timeStr, isSleep) {
+  if (!timeStr) return null;
+  const p = timeStr.split(':');
+  if (p.length !== 2) return null;
+  const h = parseInt(p[0]), min = parseInt(p[1]);
+  if (isNaN(h) || isNaN(min)) return null;
+  let total = h * 60 + min;
+  if (isSleep && h < 12) total += 24 * 60;
+  return total;
+}
+
+function minsToTimeStr(totalMins) {
+  const h = Math.floor(totalMins / 60) % 24;
+  const mn = Math.round(totalMins % 60);
+  return `${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;
 }
 
 // ── 시작 ───────────────────────────────────────────
