@@ -473,17 +473,18 @@
     .rcal-header {
       text-align: center;
       font-size: 9px;
-      color: #666;
+      color: #999;
       padding: 5px 0;
       border-right: 1px solid #1e1e1e;
       border-bottom: 1px solid #1e1e1e;
       letter-spacing: 0.05em;
     }
 
+    .rcal-sun-hdr { color: #ef5350; }
     .rcal-sat-hdr { color: #4a6a8a; }
 
     .rcal-cell {
-      min-height: 68px;
+      min-height: 90px;
       padding: 3px 3px 4px;
       border-right: 1px solid #1e1e1e;
       border-bottom: 1px solid #1e1e1e;
@@ -507,7 +508,8 @@
 
     .rcal-time-col { font-size: 7.5px; line-height: 1.35; flex: 1; min-width: 0; }
 
-    .rcal-date { font-size: 10px; color: #444; text-align: right; line-height: 1.2; flex-shrink: 0; padding-left: 2px; }
+    .rcal-date { font-size: 10px; color: #777; text-align: right; line-height: 1.2; flex-shrink: 0; padding-left: 2px; }
+    .rcal-dim  { font-size: 8px; color: #333; font-weight: 500; }
     .rcal-sat-cell .rcal-date { color: #4a6a8a; }
     .rcal-today-date { color: #6aafd6; font-weight: 700; }
 
@@ -1114,21 +1116,22 @@ function renderReport() {
     { id: 'handstand', abbr: 'HS', dot: 'dot-hs', cls: 'rcal-hs', label: 'Handstand' },
     { id: 'hanging',   abbr: 'H',  dot: 'dot-h',  cls: 'rcal-h',  label: 'Hanging'   },
     { id: 'piano',     abbr: 'P',  dot: 'dot-p',  cls: 'rcal-p',  label: 'Piano'     },
-    { id: 'golf',      abbr: 'GS', dot: 'dot-gs', cls: 'rcal-gs', label: 'Golf'      },
+    { id: 'golf',      abbr: 'GS', dot: 'dot-gs', cls: 'rcal-gs', label: 'Golf Swing' },
     { id: 'twitter',   abbr: 'X',  dot: 'dot-tw', cls: 'rcal-tw', label: 'X Post'    },
   ];
 
   let legend = '<div class="rcal-legend">';
   RMETA.forEach(r => {
-    legend += `<span class="rcal-legend-item"><span class="rcal-dot ${r.dot}"></span><span class="${r.cls}">${r.abbr}</span> ${r.label}</span>`;
+    legend += `<span class="rcal-legend-item"><span class="${r.cls}">${r.abbr}</span> ${r.label}</span>`;
   });
-  legend += `<span class="rcal-legend-item"><span class="rcal-dot dot-run"></span><span class="rcal-run-inline">RUN</span> Running</span>`;
+  legend += `<span class="rcal-legend-item"><span class="rcal-run-inline">▶</span> Running Distance/Pace/HR</span>`;
   legend += '</div>';
 
   // 달력 그리드
   let grid = '<div class="rcal-grid">';
   ['SUN','MON','TUE','WED','THU','FRI','SAT'].forEach((d, i) => {
-    grid += `<div class="rcal-header${i === 6 ? ' rcal-sat-hdr' : ''}">${d}</div>`;
+    const cls = i === 0 ? ' rcal-sun-hdr' : i === 6 ? ' rcal-sat-hdr' : '';
+    grid += `<div class="rcal-header${cls}">${d}</div>`;
   });
 
   for (let i = 0; i < firstDay; i++) {
@@ -1146,19 +1149,10 @@ function renderReport() {
     // 상단 행: 취침/기상 시간(왼쪽) + 날짜(오른쪽)
     grid += '<div class="rcal-top-row">';
     grid += '<div class="rcal-time-col">';
-    if (rec) {
-      let timeLine = '';
-      if (rec.sleepTime) {
-        const c = timeDeviationColor(rec.sleepTime, 21, 0, true);
-        timeLine += `<span style="color:${c}">${rec.sleepTime}</span>`;
-      }
-      if (rec.wakeTime) {
-        const c = timeDeviationColor(rec.wakeTime, 5, 0, false);
-        if (timeLine) timeLine += ' ';
-        timeLine += `<span style="color:${c}">${rec.wakeTime}</span>`;
-      }
-      if (timeLine) grid += `<div>${timeLine}</div>`;
-    }
+    const sc = rec?.sleepTime ? timeDeviationColor(rec.sleepTime, 21, 0, true) : '#2a2a2a';
+    const wc = rec?.wakeTime  ? timeDeviationColor(rec.wakeTime,  5, 0, false) : '#2a2a2a';
+    grid += `<div style="color:${sc}">${rec?.sleepTime || '—'}</div>`;
+    grid += `<div style="color:${wc}">${rec?.wakeTime  || '—'}</div>`;
     grid += '</div>';
     grid += `<div class="rcal-date${isToday ? ' rcal-today-date' : ''}">${d}</div>`;
     grid += '</div>';
@@ -1194,6 +1188,10 @@ function renderReport() {
         const parts = [km, pace, hr].filter(Boolean).join(' ');
         if (parts) grid += `<div class="rcal-run">▶${parts}</div>`;
       }
+    } else {
+      grid += '<div class="rcal-row"><span class="rcal-dim">HS</span> <span class="rcal-dim">H</span></div>';
+      grid += '<div class="rcal-row"><span class="rcal-dim">P</span> <span class="rcal-dim">GS</span></div>';
+      grid += '<div class="rcal-row"><span class="rcal-dim">X</span></div>';
     }
 
     grid += '</div>';
