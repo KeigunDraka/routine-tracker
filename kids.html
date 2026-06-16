@@ -7,36 +7,22 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Gothic:wght@400;700&display=swap');
 
-  :root {
-    --bg: #0f1117;
-    --card: #1a1d27;
-    --card2: #21253a;
-    --accent: #f7c948;
-    --accent2: #ff6b6b;
-    --accent3: #6bcfff;
-    --text: #f0f0f0;
-    --muted: #888;
-    --done-bg: #1a2e1a;
-    --done-border: #4caf50;
-    --done-text: #81c784;
-    --radius: 18px;
-  }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Nanum Gothic', sans-serif;
+    background: #0f0f0f;
+    color: #e8e8e8;
+    font-family: 'Nanum Gothic', -apple-system, sans-serif;
     min-height: 100vh;
-    padding: 0 0 40px;
+    padding: 0 0 60px;
   }
 
+  /* ── 헤더 ── */
   header {
-    background: linear-gradient(135deg, #1a1d27 0%, #21253a 100%);
-    padding: 24px 20px 20px;
+    background: #141414;
+    padding: 20px 16px 16px;
     text-align: center;
-    border-bottom: 2px solid #2a2e42;
+    border-bottom: 1px solid #222;
     position: sticky;
     top: 0;
     z-index: 10;
@@ -44,250 +30,580 @@
 
   .header-title {
     font-family: 'Jua', sans-serif;
-    font-size: 26px;
-    color: var(--accent);
-    letter-spacing: -0.5px;
+    font-size: 22px;
+    color: #f7c948;
   }
 
   .header-date {
-    font-size: 13px;
-    color: var(--muted);
-    margin-top: 4px;
+    font-size: 12px;
+    color: #555;
+    margin-top: 3px;
   }
 
   .progress-bar-wrap {
-    margin-top: 14px;
-    background: #2a2e42;
+    margin-top: 12px;
+    background: #222;
     border-radius: 20px;
-    height: 10px;
+    height: 8px;
     overflow: hidden;
   }
 
   .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--accent) 0%, #ff9d00 100%);
+    background: linear-gradient(90deg, #f7c948, #ff9d00);
     border-radius: 20px;
     transition: width 0.4s ease;
   }
 
   .progress-label {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 6px;
+    font-size: 11px;
+    color: #555;
+    margin-top: 5px;
     text-align: right;
   }
 
+  /* ── 컨테이너 ── */
   .container {
     max-width: 480px;
     margin: 0 auto;
-    padding: 16px 16px 0;
+    padding: 14px 14px 0;
   }
 
+  /* ── 운동 카드 ── */
   .exercise-card {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 18px 16px;
-    margin-bottom: 12px;
-    border: 1.5px solid #2a2e42;
-    transition: all 0.3s ease;
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 14px 14px 12px;
+    margin-bottom: 10px;
+    border: 1px solid #2a2a2a;
+    transition: border-color 0.2s, background 0.2s;
   }
 
   .exercise-card.done {
-    background: var(--done-bg);
-    border-color: var(--done-border);
-  }
-
-  .exercise-card.done .exercise-name {
-    color: var(--done-text);
+    background: #0d1f17;
+    border-color: #2d6a4f;
   }
 
   .exercise-header {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
   }
 
   .exercise-emoji {
-    font-size: 28px;
+    font-size: 36px;
     flex-shrink: 0;
+    line-height: 1;
   }
 
-  .exercise-info {
-    flex: 1;
-  }
+  .exercise-info { flex: 1; }
 
   .exercise-name {
     font-family: 'Jua', sans-serif;
     font-size: 20px;
-    color: var(--text);
+    color: #e8e8e8;
     line-height: 1.2;
   }
 
+  .exercise-card.done .exercise-name { color: #52b788; }
+
   .exercise-unit {
-    font-size: 12px;
-    color: var(--muted);
+    font-size: 11px;
+    color: #444;
     margin-top: 2px;
   }
 
+  /* 최근 기록 힌트 */
+  .recent-hint {
+    font-size: 11px;
+    color: #3a5a48;
+    margin-top: 1px;
+  }
+
   .done-badge {
-    font-size: 22px;
+    font-size: 20px;
     opacity: 0;
     transition: opacity 0.3s;
   }
 
-  .exercise-card.done .done-badge {
-    opacity: 1;
-  }
+  .exercise-card.done .done-badge { opacity: 1; }
 
+  /* ── 카운터 행 ── */
   .counter-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 8px;
   }
 
-  .counter-btn {
-    width: 56px;
-    height: 56px;
+  /* 체크버튼 - 숫자 왼쪽, 크게 */
+  .check-btn {
+    width: 64px;
+    height: 64px;
     border-radius: 14px;
+    border: 2px solid #2a2a2a;
+    background: #1e1e1e;
+    font-size: 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    flex-shrink: 0;
+  }
+
+  .check-btn:active { transform: scale(0.88); }
+
+  .exercise-card.done .check-btn {
+    background: #1a3d2a;
+    border-color: #40916c;
+  }
+
+  .counter-value {
+    font-family: 'Jua', sans-serif;
+    font-size: 54px;
+    color: #f7c948;
+    flex: 1;
+    text-align: center;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+
+  .exercise-card.done .counter-value { color: #52b788; }
+
+  .timer-value {
+    font-family: 'Jua', sans-serif;
+    font-size: 54px;
+    color: #6bcfff;
+    flex: 1;
+    text-align: center;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+
+  .exercise-card.done .timer-value { color: #52b788; }
+
+  .unit-label {
+    font-size: 15px;
+    color: #444;
+    width: 18px;
+    flex-shrink: 0;
+  }
+
+  /* +/- 버튼 묶음 */
+  .pm-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .counter-btn {
+    width: 52px;
+    height: 46px;
+    border-radius: 10px;
     border: none;
-    font-size: 26px;
+    font-size: 24px;
     font-weight: bold;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.1s, opacity 0.2s;
+    transition: transform 0.1s;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
   }
 
-  .counter-btn:active {
-    transform: scale(0.92);
+  .counter-btn:active { transform: scale(0.88); }
+
+  .btn-plus-yellow { background: #f7c948; color: #111; }
+  .btn-plus-blue   { background: #6bcfff; color: #111; }
+  .btn-minus       { background: #252525; color: #ff6b6b; border: 1px solid #333; }
+
+  .exercise-card.done .btn-plus-yellow { background: #40916c; color: #fff; }
+  .exercise-card.done .btn-plus-blue   { background: #40916c; color: #fff; }
+
+  /* ── 메모 ── */
+  .section-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444;
+    margin: 16px 0 8px;
   }
 
-  .btn-minus {
-    background: #2a2e42;
-    color: var(--accent2);
-  }
-
-  .btn-plus {
-    background: var(--accent);
-    color: #111;
-  }
-
-  .exercise-card.done .btn-plus {
-    background: var(--done-border);
-  }
-
-  .counter-value {
-    font-family: 'Jua', sans-serif;
-    font-size: 52px;
-    color: var(--accent);
-    min-width: 90px;
-    text-align: center;
-    line-height: 1;
-    transition: color 0.3s;
-  }
-
-  .exercise-card.done .counter-value {
-    color: var(--done-text);
-  }
-
-  .unit-label {
-    font-size: 16px;
-    color: var(--muted);
-    min-width: 28px;
-    text-align: left;
-  }
-
-  /* Timer specific */
-  .timer-display {
-    font-family: 'Jua', sans-serif;
-    font-size: 52px;
-    color: var(--accent3);
-    min-width: 110px;
-    text-align: center;
-    line-height: 1;
-    transition: color 0.3s;
-  }
-
-  .exercise-card.done .timer-display {
-    color: var(--done-text);
-  }
-
-  .btn-plus-blue {
-    background: var(--accent3);
-    color: #111;
-  }
-
-  .exercise-card.done .btn-plus-blue {
-    background: var(--done-border);
-  }
-
-  .reset-btn {
-    margin-top: 14px;
+  .memo-input {
     width: 100%;
-    padding: 10px;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: #ccc;
+    font-size: 14px;
+    font-family: 'Nanum Gothic', sans-serif;
+    resize: none;
+    outline: none;
+    line-height: 1.6;
+  }
+
+  .memo-input:focus { border-color: #333; }
+  .memo-input::placeholder { color: #2a2a2a; }
+
+  /* ── 버튼 행 ── */
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 11px 8px;
     border-radius: 10px;
     border: none;
-    background: #2a2e42;
-    color: var(--muted);
     font-size: 13px;
-    font-family: 'Nanum Gothic', sans-serif;
+    font-weight: 700;
     cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+    font-family: 'Nanum Gothic', sans-serif;
   }
 
-  .reset-btn:active { opacity: 0.7; }
+  .btn-save   { background: #40916c; color: #fff; }
+  .btn-report { background: #1f1a2e; color: #b094f5; border: 1px solid #3d2a6a; }
 
+  /* ── 완료 배너 ── */
   .all-done-banner {
     display: none;
     text-align: center;
-    padding: 28px 20px;
-    margin: 8px 0 0;
+    padding: 24px 20px;
+    margin-top: 8px;
   }
 
-  .all-done-banner.show {
-    display: block;
-  }
+  .all-done-banner.show { display: block; }
 
   .all-done-emoji {
-    font-size: 64px;
+    font-size: 60px;
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .all-done-text {
     font-family: 'Jua', sans-serif;
-    font-size: 24px;
-    color: var(--accent);
+    font-size: 22px;
+    color: #f7c948;
   }
 
   .all-done-sub {
-    font-size: 14px;
-    color: var(--muted);
-    margin-top: 6px;
+    font-size: 13px;
+    color: #555;
+    margin-top: 5px;
   }
 
-  .reset-all-btn {
-    margin-top: 20px;
-    padding: 14px 32px;
-    border-radius: 14px;
-    border: none;
-    background: #2a2e42;
-    color: var(--muted);
+  /* ── 토스트 ── */
+  .toast {
+    position: fixed;
+    bottom: 20px; left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    background: #222;
+    border: 1px solid #333;
+    color: #bbb;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.2s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 200;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── 리포트 오버레이 ── */
+  .report-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #0f0f0f;
+    z-index: 150;
+    overflow-y: auto;
+    padding: 14px 8px 32px;
+  }
+
+  .report-overlay.open { display: block; }
+
+  .report-wrap { max-width: 480px; margin: 0 auto; }
+
+  /* 닫기 버튼 - 상단 */
+  .report-close-btn {
+    width: 100%;
+    padding: 11px;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    color: #888;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Nanum Gothic', sans-serif;
+    margin-bottom: 14px;
+  }
+
+  .report-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .nav-btn {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #888;
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .report-title-wrap {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex: 1;
+    padding: 0 10px;
+  }
+
+  .report-month-label {
+    font-size: 24px;
+    font-weight: 900;
+    color: #fff;
     font-family: 'Jua', sans-serif;
-    font-size: 16px;
+  }
+
+  .report-subtitle { font-size: 10px; color: #555; letter-spacing: 0.15em; }
+
+  /* ── 통계 카드 ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .stat-card {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+
+  .stat-emoji { font-size: 18px; }
+
+  .stat-name {
+    font-size: 11px;
+    color: #555;
+    margin-top: 3px;
+    margin-bottom: 6px;
+  }
+
+  /* 이번달/평생 나란히 */
+  .stat-nums-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    margin-bottom: 6px;
+  }
+
+  .stat-num-block { flex: 1; }
+
+  .stat-num-label {
+    font-size: 9px;
+    color: #444;
+    margin-bottom: 1px;
+  }
+
+  .stat-num-value {
+    font-family: 'Jua', sans-serif;
+    font-size: 20px;
+    line-height: 1.1;
+  }
+
+  .stat-num-value.month-col { color: #f7c948; }
+  .stat-num-value.all-col   { color: #52b788; }
+  .stat-num-value.month-col.blue { color: #6bcfff; }
+  .stat-num-value.all-col.blue   { color: #40916c; }
+
+  .stat-divider {
+    width: 1px;
+    height: 32px;
+    background: #2a2a2a;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  /* 달성률 바 */
+  .stat-month-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+  }
+
+  .stat-bar-wrap {
+    flex: 1;
+    background: #252525;
+    border-radius: 4px;
+    height: 5px;
+    overflow: hidden;
+  }
+
+  .stat-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: #40916c;
+    transition: width 0.4s;
+  }
+
+  .stat-pct {
+    font-size: 11px;
+    color: #52b788;
+    min-width: 30px;
+    text-align: right;
+  }
+
+  .stat-days-label {
+    font-size: 9px;
+    color: #444;
+    margin-top: 3px;
+  }
+
+  /* ── 리포트 범례 ── */
+  .rcal-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 12px;
+    justify-content: center;
+    padding: 0 0 10px;
+    font-size: 10px;
+    color: #666;
+  }
+
+  .rcal-legend-item { display: flex; align-items: center; gap: 4px; }
+
+  /* ── 리포트 달력 그리드 ── */
+  .rcal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-left: 1px solid #1e1e1e;
+    border-top: 1px solid #1e1e1e;
+  }
+
+  .rcal-header {
+    text-align: center;
+    font-size: 9px;
+    color: #999;
+    padding: 5px 0;
+    border-right: 1px solid #1e1e1e;
+    border-bottom: 1px solid #1e1e1e;
+    letter-spacing: 0.05em;
+  }
+
+  .rcal-sun-hdr { color: #ef5350; }
+  .rcal-sat-hdr { color: #4a6a8a; }
+
+  .rcal-cell {
+    min-height: 80px;
+    padding: 3px 3px 4px;
+    border-right: 1px solid #1e1e1e;
+    border-bottom: 1px solid #1e1e1e;
+    word-break: break-all;
     cursor: pointer;
   }
 
-  .reset-all-btn:active { opacity: 0.7; }
+  .rcal-cell:active { background: #1a1a1a; }
+  .rcal-today { background: #0a1a0f; }
+
+  .rcal-top-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 2px;
+  }
+
+  .rcal-date { font-size: 10px; color: #555; line-height: 1.2; }
+  .rcal-sat-cell .rcal-date { color: #4a6a8a; }
+  .rcal-today-date { color: #52b788; font-weight: 700; }
+
+  .rcal-row { display: flex; flex-wrap: wrap; gap: 2px; margin-bottom: 1px; }
+  .rcal-dim { font-size: 7.5px; color: #2a2a2a; font-weight: 600; }
+
+  .rcal-pu { font-size: 7.5px; color: #f7c948; font-weight: 600; }
+  .rcal-sq { font-size: 7.5px; color: #ff9d6b; font-weight: 600; }
+  .rcal-lr { font-size: 7.5px; color: #b094f5; font-weight: 600; }
+  .rcal-sm { font-size: 7.5px; color: #66bb6a; font-weight: 600; }
+  .rcal-hg { font-size: 7.5px; color: #6bcfff; font-weight: 600; }
+
+  .rcal-memo { font-size: 7px; color: #3a3a3a; margin-top: 1px; overflow: hidden; max-height: 18px; line-height: 1.3; }
+
+  /* ── 팝업 ── */
+  .popup-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 160;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .popup-overlay.open { display: flex; }
+
+  .popup {
+    background: #181818;
+    border: 1px solid #2a2a2a;
+    border-radius: 16px 16px 0 0;
+    padding: 20px 20px 32px;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .popup-date { font-size: 12px; color: #555; margin-bottom: 12px; }
+
+  .popup-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    padding: 7px 0;
+    border-bottom: 1px solid #1e1e1e;
+  }
+
+  .popup-row:last-child { border-bottom: none; }
+  .popup-key { color: #666; }
+  .popup-val { color: #ccc; text-align: right; }
+  .popup-val.done { color: #52b788; }
+  .popup-val.skip { color: #333; }
+
+  .popup-close {
+    margin-top: 14px;
+    width: 100%;
+    padding: 13px;
+    background: #222;
+    border: none;
+    border-radius: 8px;
+    color: #777;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Nanum Gothic', sans-serif;
+  }
 </style>
 </head>
 <body>
 
+<!-- 헤더 -->
 <header>
   <div class="header-title">오늘의 운동 💪</div>
   <div class="header-date" id="headerDate"></div>
@@ -297,195 +613,399 @@
   <div class="progress-label" id="progressLabel">0 / 5 완료</div>
 </header>
 
+<div class="container" id="mainCards"></div>
+
+<!-- 메인 하단 -->
 <div class="container">
+  <div class="section-title">메모</div>
+  <textarea class="memo-input" id="memo" rows="2" placeholder="오늘 운동 어땠어?"></textarea>
 
-  <!-- 1. 팔굽혀펴기 -->
-  <div class="exercise-card" id="card-0">
-    <div class="exercise-header">
-      <div class="exercise-emoji">🤸</div>
-      <div class="exercise-info">
-        <div class="exercise-name">팔굽혀펴기</div>
-        <div class="exercise-unit">Push-up</div>
-      </div>
-      <div class="done-badge">✅</div>
-    </div>
-    <div class="counter-row">
-      <button class="counter-btn btn-minus" onclick="changeCount(0, -1)">−</button>
-      <span class="counter-value" id="val-0">0</span>
-      <span class="unit-label">개</span>
-      <button class="counter-btn btn-plus" onclick="changeCount(0, 1)">+</button>
-    </div>
-    <button class="reset-btn" onclick="resetItem(0)">↺ 초기화</button>
-  </div>
-
-  <!-- 2. 스쿼트 -->
-  <div class="exercise-card" id="card-1">
-    <div class="exercise-header">
-      <div class="exercise-emoji">🦵</div>
-      <div class="exercise-info">
-        <div class="exercise-name">스쿼트</div>
-        <div class="exercise-unit">Squat</div>
-      </div>
-      <div class="done-badge">✅</div>
-    </div>
-    <div class="counter-row">
-      <button class="counter-btn btn-minus" onclick="changeCount(1, -1)">−</button>
-      <span class="counter-value" id="val-1">0</span>
-      <span class="unit-label">개</span>
-      <button class="counter-btn btn-plus" onclick="changeCount(1, 1)">+</button>
-    </div>
-    <button class="reset-btn" onclick="resetItem(1)">↺ 초기화</button>
-  </div>
-
-  <!-- 3. 다리들기 -->
-  <div class="exercise-card" id="card-2">
-    <div class="exercise-header">
-      <div class="exercise-emoji">🦶</div>
-      <div class="exercise-info">
-        <div class="exercise-name">다리들기</div>
-        <div class="exercise-unit">Leg Raise</div>
-      </div>
-      <div class="done-badge">✅</div>
-    </div>
-    <div class="counter-row">
-      <button class="counter-btn btn-minus" onclick="changeCount(2, -1)">−</button>
-      <span class="counter-value" id="val-2">0</span>
-      <span class="unit-label">개</span>
-      <button class="counter-btn btn-plus" onclick="changeCount(2, 1)">+</button>
-    </div>
-    <button class="reset-btn" onclick="resetItem(2)">↺ 초기화</button>
-  </div>
-
-  <!-- 4. 슈퍼맨 -->
-  <div class="exercise-card" id="card-3">
-    <div class="exercise-header">
-      <div class="exercise-emoji">🦸</div>
-      <div class="exercise-info">
-        <div class="exercise-name">슈퍼맨</div>
-        <div class="exercise-unit">Superman</div>
-      </div>
-      <div class="done-badge">✅</div>
-    </div>
-    <div class="counter-row">
-      <button class="counter-btn btn-minus" onclick="changeCount(3, -1)">−</button>
-      <span class="counter-value" id="val-3">0</span>
-      <span class="unit-label">개</span>
-      <button class="counter-btn btn-plus" onclick="changeCount(3, 1)">+</button>
-    </div>
-    <button class="reset-btn" onclick="resetItem(3)">↺ 초기화</button>
-  </div>
-
-  <!-- 5. 매달리기 (초) -->
-  <div class="exercise-card" id="card-4">
-    <div class="exercise-header">
-      <div class="exercise-emoji">🙌</div>
-      <div class="exercise-info">
-        <div class="exercise-name">매달리기</div>
-        <div class="exercise-unit">Dead Hang</div>
-      </div>
-      <div class="done-badge">✅</div>
-    </div>
-    <div class="counter-row">
-      <button class="counter-btn btn-minus" onclick="changeCount(4, -1)">−</button>
-      <span class="timer-display" id="val-4">0</span>
-      <span class="unit-label">초</span>
-      <button class="counter-btn btn-plus-blue" onclick="changeCount(4, 1)">+</button>
-    </div>
-    <button class="reset-btn" onclick="resetItem(4)">↺ 초기화</button>
+  <div class="btn-row">
+    <button class="btn btn-save" onclick="saveDay()">저장</button>
+    <button class="btn btn-report" onclick="showReport()">리포트</button>
   </div>
 
   <div class="all-done-banner" id="allDoneBanner">
     <span class="all-done-emoji">🎉</span>
     <div class="all-done-text">오늘 운동 완료!</div>
     <div class="all-done-sub">최고야! 내일도 하자 💪</div>
-    <button class="reset-all-btn" onclick="resetAll()">↺ 처음부터 다시</button>
   </div>
+</div>
 
+<div class="toast" id="toast"></div>
+
+<!-- 리포트 오버레이 -->
+<div class="report-overlay" id="reportOverlay">
+  <div class="report-wrap">
+    <!-- 닫기 버튼 상단 -->
+    <button class="report-close-btn" onclick="closeReport()">✕ 닫기</button>
+
+    <div class="report-header">
+      <button class="nav-btn" onclick="changeReportMonth(-1)">‹</button>
+      <div class="report-title-wrap">
+        <span class="report-month-label" id="reportMonthLabel"></span>
+        <span class="report-subtitle">WORKOUT</span>
+      </div>
+      <button class="nav-btn" onclick="changeReportMonth(1)">›</button>
+    </div>
+
+    <div id="reportBody"></div>
+  </div>
+</div>
+
+<!-- 팝업 -->
+<div class="popup-overlay" id="popupOverlay" onclick="closePopup(event)">
+  <div class="popup">
+    <div class="popup-date" id="popupDate"></div>
+    <div id="popupBody"></div>
+    <button class="popup-close" onclick="closePopup()">닫기</button>
+  </div>
 </div>
 
 <script>
-  // State: targets per exercise (0 = no target, just count)
-  // Items: [pushup, squat, legraise, superman, hang]
-  // "done" = value > 0
-  const STORAGE_KEY = 'kids_routine_v1';
+// ── 상수 ──────────────────────────────────────────
+const EXERCISES = [
+  { id: 'pushup',   label: '팔굽혀펴기', emoji: '🤸', unit: '개', abbr: 'PU', cls: 'rcal-pu' },
+  { id: 'squat',    label: '스쿼트',     emoji: '🦵', unit: '개', abbr: 'SQ', cls: 'rcal-sq' },
+  { id: 'legraise', label: '다리들기',   emoji: '🦶', unit: '개', abbr: 'LR', cls: 'rcal-lr' },
+  { id: 'superman', label: '슈퍼맨',     emoji: '🦸', unit: '개', abbr: 'SM', cls: 'rcal-sm' },
+  { id: 'hang',     label: '매달리기',   emoji: '🙌', unit: '초', abbr: 'H',  cls: 'rcal-hg', isTime: true },
+];
 
-  let state = { values: [0, 0, 0, 0, 0], date: '' };
+const DAYS      = ['일','월','화','수','목','금','토'];
+const MONTHS_EN = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+const DB_KEY    = 'kids_workout_db';
 
-  function todayStr() {
-    return new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+// ── 상태 ──────────────────────────────────────────
+let db          = JSON.parse(localStorage.getItem(DB_KEY) || '{}');
+let todayValues = [0,0,0,0,0];  // 오늘 실제 입력값 (0이면 미입력)
+let recentVals  = [0,0,0,0,0];  // 가장 최근 기록값 (체크버튼 기본값)
+let reportMonth = { y: new Date().getFullYear(), m: new Date().getMonth() };
+
+// ── 날짜 유틸 ─────────────────────────────────────
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function todayStr() {
+  return new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+}
+
+// ── 최근 기록 로드 ────────────────────────────────
+function loadRecentVals() {
+  const key     = todayKey();
+  const allKeys = Object.keys(db).filter(k => k < key).sort().reverse();
+  if (allKeys.length > 0) {
+    const last = db[allKeys[0]];
+    recentVals = last.values ? [...last.values] : [0,0,0,0,0];
+  } else {
+    recentVals = [0,0,0,0,0];
   }
+}
 
-  function todayKey() {
-    const d = new Date();
-    return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+// ── 로드 ──────────────────────────────────────────
+function load() {
+  loadRecentVals();
+  const key   = todayKey();
+  const saved = db[key];
+  if (saved && saved.values) {
+    todayValues = [...saved.values];
+  } else {
+    todayValues = [0,0,0,0,0];
   }
+  document.getElementById('memo').value = saved?.memo || '';
+  renderCards();
+  renderProgress();
+}
 
-  function load() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-      if (saved.date === todayKey()) {
-        state = saved;
-      } else {
-        state = { values: [0, 0, 0, 0, 0], date: todayKey() };
-      }
-    } catch(e) {
-      state = { values: [0, 0, 0, 0, 0], date: todayKey() };
-    }
-    render();
+// ── 즉시 저장 (내부) ──────────────────────────────
+function persist() {
+  const key = todayKey();
+  if (!db[key]) db[key] = { date: key, values: [0,0,0,0,0], memo: null };
+  db[key].values = [...todayValues];
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+}
+
+// ── 저장 버튼 (메모 포함) ─────────────────────────
+function saveDay() {
+  const key = todayKey();
+  if (!db[key]) db[key] = { date: key, values: [...todayValues], memo: null };
+  db[key].memo = document.getElementById('memo').value.trim() || null;
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+  toast('저장했어요 ✓');
+}
+
+// ── 카운터 변경 ───────────────────────────────────
+function changeCount(idx, delta) {
+  todayValues[idx] = Math.max(0, todayValues[idx] + delta);
+  persist();
+  renderCards();
+  renderProgress();
+}
+
+// ── 체크버튼: 최근값으로 토글 ────────────────────
+function checkToggle(idx) {
+  if (todayValues[idx] > 0) {
+    // 이미 했으면 → 0으로 (취소)
+    todayValues[idx] = 0;
+  } else {
+    // 안 했으면 → 최근값으로 채우기
+    todayValues[idx] = recentVals[idx] || 1;
   }
+  persist();
+  renderCards();
+  renderProgress();
+}
 
-  function save() {
-    state.date = todayKey();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }
+// ── 카드 렌더링 ───────────────────────────────────
+function renderCards() {
+  const container = document.getElementById('mainCards');
+  container.innerHTML = '';
 
-  function changeCount(idx, delta) {
-    state.values[idx] = Math.max(0, state.values[idx] + delta);
-    save();
-    render();
-  }
+  EXERCISES.forEach((ex, i) => {
+    const v    = todayValues[i];
+    const done = v > 0;
+    const isTime = !!ex.isTime;
+    const recent = recentVals[i];
 
-  function resetItem(idx) {
-    state.values[idx] = 0;
-    save();
-    render();
-  }
+    const card = document.createElement('div');
+    card.className = 'exercise-card' + (done ? ' done' : '');
+    card.id = `card-${i}`;
 
-  function resetAll() {
-    state.values = [0, 0, 0, 0, 0];
-    save();
-    render();
-  }
+    const recentHint = recent > 0
+      ? `<div class="recent-hint">최근: ${recent}${ex.unit}</div>`
+      : '';
 
-  function render() {
-    document.getElementById('headerDate').textContent = todayStr();
+    const checkEmoji = done ? '✅' : '⬜';
+    const valueClass = isTime ? 'timer-value' : 'counter-value';
+    const plusClass  = isTime ? 'btn-plus-blue' : 'btn-plus-yellow';
 
-    let doneCount = 0;
-    for (let i = 0; i < 5; i++) {
-      const v = state.values[i];
-      document.getElementById(`val-${i}`).textContent = v;
-      const card = document.getElementById(`card-${i}`);
+    card.innerHTML = `
+      <div class="exercise-header">
+        <div class="exercise-emoji">${ex.emoji}</div>
+        <div class="exercise-info">
+          <div class="exercise-name">${ex.label}</div>
+          <div class="exercise-unit">${isTime ? 'Dead Hang' : ex.label === '팔굽혀펴기' ? 'Push-up' : ex.label === '스쿼트' ? 'Squat' : ex.label === '다리들기' ? 'Leg Raise' : 'Superman'}</div>
+          ${recentHint}
+        </div>
+        <div class="done-badge">✅</div>
+      </div>
+      <div class="counter-row">
+        <button class="check-btn" onclick="checkToggle(${i})">${checkEmoji}</button>
+        <span class="${valueClass}" id="val-${i}">${v}</span>
+        <span class="unit-label">${ex.unit}</span>
+        <div class="pm-col">
+          <button class="counter-btn ${plusClass}" onclick="changeCount(${i},1)">+</button>
+          <button class="counter-btn btn-minus" onclick="changeCount(${i},-1)">−</button>
+        </div>
+      </div>`;
+
+    container.appendChild(card);
+  });
+}
+
+// ── 프로그레스 렌더링 ─────────────────────────────
+function renderProgress() {
+  let doneCount = todayValues.filter(v => v > 0).length;
+  const pct = Math.round(doneCount / 5 * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${doneCount} / 5 완료`;
+  document.getElementById('headerDate').textContent = todayStr();
+
+  const banner = document.getElementById('allDoneBanner');
+  if (doneCount === 5) banner.classList.add('show');
+  else                 banner.classList.remove('show');
+}
+
+// ── 리포트 ────────────────────────────────────────
+function showReport() {
+  reportMonth = { y: new Date().getFullYear(), m: new Date().getMonth() };
+  renderReport();
+  document.getElementById('reportOverlay').classList.add('open');
+}
+
+function closeReport() {
+  document.getElementById('reportOverlay').classList.remove('open');
+}
+
+function changeReportMonth(delta) {
+  reportMonth.m += delta;
+  if (reportMonth.m < 0)  { reportMonth.m = 11; reportMonth.y--; }
+  if (reportMonth.m > 11) { reportMonth.m = 0;  reportMonth.y++; }
+  renderReport();
+}
+
+function renderReport() {
+  const { y, m } = reportMonth;
+  document.getElementById('reportMonthLabel').textContent = `${MONTHS_EN[m]} ${y}`;
+
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const firstDay    = new Date(y, m, 1).getDay();
+  const tKey        = todayKey();
+  const monthPrefix = `${y}-${String(m+1).padStart(2,'0')}`;
+
+  // ── 통계 계산 ──
+  let monthSums = [0,0,0,0,0];
+  let monthDays = [0,0,0,0,0];
+  let allSums   = [0,0,0,0,0];
+
+  Object.entries(db).forEach(([key, rec]) => {
+    if (!rec.values) return;
+    rec.values.forEach((v, i) => {
       if (v > 0) {
-        card.classList.add('done');
-        doneCount++;
-      } else {
-        card.classList.remove('done');
+        allSums[i] += v;
+        if (key.startsWith(monthPrefix)) {
+          monthSums[i] += v;
+          monthDays[i]++;
+        }
       }
+    });
+  });
+
+  const nowY = new Date().getFullYear(), nowM = new Date().getMonth();
+  const isCurrentMonth = (y === nowY && m === nowM);
+  const elapsedDays    = isCurrentMonth ? new Date().getDate() : daysInMonth;
+
+  // ── 통계 카드 ──
+  let statsHTML = '<div class="stats-grid">';
+  EXERCISES.forEach((ex, i) => {
+    const pct    = elapsedDays > 0 ? Math.round(monthDays[i] / elapsedDays * 100) : 0;
+    const isTime = !!ex.isTime;
+    const blue   = isTime ? ' blue' : '';
+
+    function fmtVal(n) {
+      if (!isTime) return n.toLocaleString() + ex.unit;
+      if (n >= 60) return `${Math.floor(n/60)}분 ${n%60}초`;
+      return n + '초';
     }
 
-    const pct = Math.round((doneCount / 5) * 100);
-    document.getElementById('progressFill').style.width = pct + '%';
-    document.getElementById('progressLabel').textContent = `${doneCount} / 5 완료`;
+    statsHTML += `
+      <div class="stat-card">
+        <div class="stat-emoji">${ex.emoji}</div>
+        <div class="stat-name">${ex.label}</div>
+        <div class="stat-nums-row">
+          <div class="stat-num-block">
+            <div class="stat-num-label">이번달</div>
+            <div class="stat-num-value month-col${blue}">${fmtVal(monthSums[i])}</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-num-block">
+            <div class="stat-num-label">평생 한 횟수</div>
+            <div class="stat-num-value all-col${blue}">${fmtVal(allSums[i])}</div>
+          </div>
+        </div>
+        <div class="stat-month-row">
+          <div class="stat-bar-wrap">
+            <div class="stat-bar-fill" style="width:${pct}%"></div>
+          </div>
+          <span class="stat-pct">${pct}%</span>
+        </div>
+        <div class="stat-days-label">이번달 ${monthDays[i]}일 실행 / ${elapsedDays}일</div>
+      </div>`;
+  });
+  statsHTML += '</div>';
 
-    const banner = document.getElementById('allDoneBanner');
-    if (doneCount === 5) {
-      banner.classList.add('show');
+  // ── 범례 ──
+  let legend = '<div class="rcal-legend">';
+  EXERCISES.forEach(ex => {
+    legend += `<span class="rcal-legend-item"><span class="${ex.cls}">${ex.abbr}</span> ${ex.label}</span>`;
+  });
+  legend += '</div>';
+
+  // ── 달력 그리드 ──
+  let grid = '<div class="rcal-grid">';
+  ['SUN','MON','TUE','WED','THU','FRI','SAT'].forEach((d,i) => {
+    const cls = i===0 ? ' rcal-sun-hdr' : i===6 ? ' rcal-sat-hdr' : '';
+    grid += `<div class="rcal-header${cls}">${d}</div>`;
+  });
+
+  for (let i = 0; i < firstDay; i++) grid += '<div class="rcal-cell" style="cursor:default"></div>';
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const rec     = db[dateStr];
+    const isToday = dateStr === tKey;
+    const isSat   = new Date(y, m, d).getDay() === 6;
+
+    grid += `<div class="rcal-cell${isToday?' rcal-today':''}${isSat?' rcal-sat-cell':''}" onclick="showPopup('${dateStr}')">`;
+    grid += `<div class="rcal-top-row"><span class="rcal-date${isToday?' rcal-today-date':''}">${d}</span></div>`;
+
+    if (rec && rec.values) {
+      const v = rec.values;
+      if (v[0]>0 || v[1]>0) {
+        grid += '<div class="rcal-row">';
+        if (v[0]>0) grid += `<span class="rcal-pu">PU${v[0]}</span>`;
+        if (v[1]>0) grid += `<span class="rcal-sq">SQ${v[1]}</span>`;
+        grid += '</div>';
+      }
+      if (v[2]>0 || v[3]>0) {
+        grid += '<div class="rcal-row">';
+        if (v[2]>0) grid += `<span class="rcal-lr">LR${v[2]}</span>`;
+        if (v[3]>0) grid += `<span class="rcal-sm">SM${v[3]}</span>`;
+        grid += '</div>';
+      }
+      if (v[4]>0) grid += `<div class="rcal-row"><span class="rcal-hg">H${v[4]}s</span></div>`;
+      if (rec.memo) grid += `<div class="rcal-memo">${rec.memo}</div>`;
     } else {
-      banner.classList.remove('show');
+      grid += '<div class="rcal-row"><span class="rcal-dim">PU</span><span class="rcal-dim">SQ</span></div>';
+      grid += '<div class="rcal-row"><span class="rcal-dim">LR</span><span class="rcal-dim">SM</span></div>';
+      grid += '<div class="rcal-row"><span class="rcal-dim">H</span></div>';
     }
+    grid += '</div>';
   }
+  grid += '</div>';
 
-  load();
+  document.getElementById('reportBody').innerHTML = statsHTML + legend + grid;
+}
+
+// ── 팝업 ──────────────────────────────────────────
+function showPopup(dateStr) {
+  const rec = db[dateStr];
+  const d   = new Date(dateStr + 'T00:00:00');
+  document.getElementById('popupDate').textContent =
+    `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${DAYS[d.getDay()]})`;
+
+  const body = document.getElementById('popupBody');
+  if (!rec || !rec.values) {
+    body.innerHTML = '<div class="popup-row"><span class="popup-key" style="color:#333">기록 없음</span></div>';
+  } else {
+    let html = '';
+    EXERCISES.forEach((ex, i) => {
+      const v    = rec.values[i];
+      const done = v > 0;
+      html += `<div class="popup-row">
+        <span class="popup-key">${ex.emoji} ${ex.label}</span>
+        <span class="popup-val ${done?'done':'skip'}">${done ? v+' '+ex.unit : '—'}</span>
+      </div>`;
+    });
+    if (rec.memo) {
+      html += `<div class="popup-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+        <span class="popup-key">메모</span>
+        <span style="font-size:12px;color:#888;line-height:1.5">${rec.memo}</span>
+      </div>`;
+    }
+    body.innerHTML = html;
+  }
+  document.getElementById('popupOverlay').classList.add('open');
+}
+
+function closePopup(e) {
+  if (!e || e.target === document.getElementById('popupOverlay')) {
+    document.getElementById('popupOverlay').classList.remove('open');
+  }
+}
+
+// ── 토스트 ────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ── 시작 ──────────────────────────────────────────
+load();
 </script>
 </body>
 </html>
