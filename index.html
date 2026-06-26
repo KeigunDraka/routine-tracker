@@ -552,6 +552,10 @@
     .rcal-p  { font-size: 8px; color: #26a69a; font-weight: 600; }
     .rcal-gs { font-size: 8px; color: #66bb6a; font-weight: 600; }
     .rcal-tw { font-size: 8px; color: #f0a030; font-weight: 600; }
+    .rcal-pu { font-size: 8px; color: #f7c948; font-weight: 600; }
+    .rcal-sq { font-size: 8px; color: #ff9d6b; font-weight: 600; }
+    .rcal-lr { font-size: 8px; color: #b094f5; font-weight: 600; }
+    .rcal-sm { font-size: 8px; color: #52d9c0; font-weight: 600; }
 
     .rcal-run { font-size: 7.5px; color: #ef5350; margin-top: 1px; line-height: 1.3; }
     .rcal-run-inline { color: #ef5350; }
@@ -602,7 +606,7 @@
 
   <!-- 수면 -->
   <div class="section-title section-title-row">
-    <span>수면</span><span class="rev-badge">Rev. 3</span>
+    <span>수면</span><span class="rev-badge">Rev. 4</span>
   </div>
   <div class="sleep-row">
     <div class="time-group">
@@ -619,8 +623,8 @@
     </div>
   </div>
 
-  <!-- Daily 5 -->
-  <div class="section-title">Daily 5</div>
+  <!-- Daily 9 -->
+  <div class="section-title">Daily 9</div>
   <div class="routines" id="routineList"></div>
 
   <!-- 달리기 -->
@@ -701,11 +705,15 @@
 <script>
 // ── 상수 ───────────────────────────────────────────
 const ROUTINES = [
-  { id: 'handstand', label: '물구나무', type: 'number', unit: '초',    step: 5,  defaultVal: 20 },
-  { id: 'piano',     label: '피아노',   type: 'number', unit: '페이지', step: 1,  defaultVal: 2  },
-  { id: 'golf',      label: '골프 스윙', type: 'number', unit: '회',    step: 5,  defaultVal: 15 },
-  { id: 'hanging',   label: '행잉',     type: 'number', unit: '초',    step: 5,  defaultVal: 20 },
+  { id: 'handstand', label: '물구나무',    type: 'number', unit: '초',    step: 5,  defaultVal: 20 },
+  { id: 'piano',     label: '피아노',      type: 'number', unit: '페이지', step: 1,  defaultVal: 2  },
+  { id: 'golf',      label: '골프 스윙',   type: 'number', unit: '회',    step: 5,  defaultVal: 15 },
+  { id: 'hanging',   label: '행잉',        type: 'number', unit: '초',    step: 5,  defaultVal: 20 },
   { id: 'twitter',   label: 'X 글올리기',  type: 'toggle' },
+  { id: 'pushup',    label: '팔굽혀펴기',  type: 'number', unit: '개',    step: 1,  defaultVal: 3 },
+  { id: 'squat',     label: '스쿼트',      type: 'number', unit: '개',    step: 1,  defaultVal: 3 },
+  { id: 'legraise',  label: '다리들기',    type: 'number', unit: '개',    step: 1,  defaultVal: 3 },
+  { id: 'superman',  label: '슈퍼맨',      type: 'number', unit: '개',    step: 1,  defaultVal: 3 },
 ];
 
 const DAYS   = ['일','월','화','수','목','금','토'];
@@ -1166,6 +1174,10 @@ function renderReport() {
     { id: 'piano',     abbr: 'P',  dot: 'dot-p',  cls: 'rcal-p',  label: 'Piano'     },
     { id: 'golf',      abbr: 'GS', dot: 'dot-gs', cls: 'rcal-gs', label: 'Golf Swing' },
     { id: 'twitter',   abbr: 'X',  dot: 'dot-tw', cls: 'rcal-tw', label: 'X Post'    },
+    { id: 'pushup',    abbr: 'PU', dot: 'dot-pu', cls: 'rcal-pu', label: 'Push-up'   },
+    { id: 'squat',     abbr: 'SQ', dot: 'dot-sq', cls: 'rcal-sq', label: 'Squat'     },
+    { id: 'legraise',  abbr: 'LR', dot: 'dot-lr', cls: 'rcal-lr', label: 'Leg Raise' },
+    { id: 'superman',  abbr: 'SM', dot: 'dot-sm', cls: 'rcal-sm', label: 'Superman'  },
   ];
 
   let legend = '<div class="rcal-legend">';
@@ -1227,6 +1239,23 @@ function renderReport() {
 
       if (rec.routines?.twitter) {
         grid += `<div class="rcal-row"><span class="rcal-tw">X✓</span></div>`;
+      }
+
+      const pu = rec.routines?.pushup;
+      const sq = rec.routines?.squat;
+      const lr = rec.routines?.legraise;
+      const sm = rec.routines?.superman;
+      if (pu || sq || lr || sm) {
+        grid += '<div class="rcal-row">';
+        if (pu) grid += `<span class="rcal-pu">PU${pu}</span>`;
+        if (sq) grid += `<span class="rcal-sq">SQ${sq}</span>`;
+        grid += '</div>';
+        if (lr || sm) {
+          grid += '<div class="rcal-row">';
+          if (lr) grid += `<span class="rcal-lr">LR${lr}</span>`;
+          if (sm) grid += `<span class="rcal-sm">SM${sm}</span>`;
+          grid += '</div>';
+        }
       }
 
       if (rec.running) {
