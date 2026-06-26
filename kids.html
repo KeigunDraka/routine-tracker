@@ -272,6 +272,9 @@
 
   .btn-save   { background: #40916c; color: #fff; }
   .btn-report { background: #1f1a2e; color: #b094f5; border: 1px solid #3d2a6a; }
+  .btn-sm     { flex: 0.5; font-size: 11px; padding: 11px 4px; }
+  .btn-export { background: #1a2a3a; color: #6aafd6; border: 1px solid #1e3a5f; }
+  .btn-import { background: #1a1a2a; color: #8a8adc; border: 1px solid #2a2a4a; }
 
   /* ── 완료 배너 ── */
   .all-done-banner {
@@ -623,6 +626,8 @@
   <div class="btn-row">
     <button class="btn btn-save" onclick="saveDay()">저장</button>
     <button class="btn btn-report" onclick="showReport()">리포트</button>
+    <button class="btn btn-sm btn-export" onclick="exportData()">내보내기</button>
+    <button class="btn btn-sm btn-import" onclick="importData()">가져오기</button>
   </div>
 
   <div class="all-done-banner" id="allDoneBanner">
@@ -1002,6 +1007,51 @@ function toast(msg) {
   el.textContent = msg;
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ── 내보내기 ──────────────────────────────────────
+function exportData() {
+  const records = Object.values(db).sort((a, b) => a.date.localeCompare(b.date));
+  const payload = { exported_at: new Date().toISOString(), records };
+  const blob    = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url     = URL.createObjectURL(blob);
+  const a       = document.createElement('a');
+  const now     = new Date();
+  a.href        = url;
+  a.download    = `kids_workout_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('내보내기 완료 ✓');
+}
+
+// ── 가져오기 ──────────────────────────────────────
+function importData() {
+  const input  = document.createElement('input');
+  input.type   = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const parsed  = JSON.parse(ev.target.result);
+        const records = parsed.records || (Array.isArray(parsed) ? parsed : Object.values(parsed));
+        let added = 0, skipped = 0;
+        records.forEach(rec => {
+          if (!rec.date) return;
+          if (db[rec.date]) skipped++;
+          else { db[rec.date] = rec; added++; }
+        });
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
+        toast(`${added}개 추가, ${skipped}개 중복 건너뜀`);
+      } catch {
+        toast('파일 형식 오류');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
 }
 
 // ── 시작 ──────────────────────────────────────────
