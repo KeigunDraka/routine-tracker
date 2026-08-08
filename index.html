@@ -113,6 +113,7 @@
 
     .routine-item {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 10px;
       background: #1a1a1a;
@@ -168,6 +169,40 @@
     .routine-thumb.thumb-tall {
       width: 22px;
       height: 40px;
+    }
+
+    .routine-timer-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid #222;
+    }
+
+    .timer-btn {
+      padding: 6px 12px;
+      border-radius: 7px;
+      border: 1px solid #2d4a6a;
+      background: #14243a;
+      color: #6aafd6;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      flex-shrink: 0;
+    }
+
+    .timer-btn.running {
+      background: #3a1414;
+      border-color: #6a2d2d;
+      color: #ff8080;
+    }
+
+    .timer-display {
+      font-size: 11px;
+      color: #6aafd6;
     }
 
     .routine-controls {
@@ -801,6 +836,7 @@ function goToday() {
 }
 
 function loadDate() {
+  if (activeTimer) stopExerciseTimer();
   values    = {};
   prefilled = {};
   clearForm();
@@ -896,13 +932,124 @@ function renderRoutines() {
           <span class="routine-unit">${r.unit}</span>
           <button class="plus-btn" onclick="addValue('${r.id}', ${r.step})">+${r.step}</button>
         </div>`;
-      item.innerHTML = circleClickable + label + controls;
+      const isTime = r.unit === '초';
+      const timerRow = isTime ? `
+        <div class="routine-timer-row">
+          <button class="timer-btn" id="timerbtn-${r.id}" onclick="startExerciseTimer('${r.id}')">▶ 타이머</button>
+          <span class="timer-display" id="timerdisp-${r.id}"></span>
+        </div>` : '';
+      item.innerHTML = circleClickable + label + controls + timerRow;
     } else {
       item.onclick = () => toggleItem(r.id);
       item.innerHTML = circle + label + controls;
     }
     list.appendChild(item);
   });
+
+  // 재렌더링 시 실행 중인 타이머 UI 상태 복원
+  if (activeTimer) {
+    const btn  = document.getElementById(`timerbtn-${activeTimer.exId}`);
+    const disp = document.getElementById(`timerdisp-${activeTimer.exId}`);
+    if (btn) { btn.textContent = '■ 정지'; btn.classList.add('running'); }
+    if (disp) {
+      if (activeTimer.intervalId) {
+        disp.textContent = activeTimer.targetHit
+          ? `🎉 성공! ${activeTimer.seconds}초 진행 중 (계속)`
+          : `${activeTimer.seconds}초 진행 중...`;
+      } else {
+        disp.textContent = `목표 ${activeTimer.target}초 · 5초 뒤 시작...`;
+      }
+    }
+  }
+}
+
+// ── 음성 타이머 (TTS) ─────────────────────────────
+let activeTimer = null; // { exId, seconds, targetHit, intervalId, target, countdownId }
+
+function speak(text) {
+  try {
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'ko-KR';
+    utter.rate = 1.0;
+    window.speechSynthesis.speak(utter);
+  } catch (e) { /* TTS 미지원 브라우저는 조용히 무시 */ }
+}
+
+// 1~99 한글 숫자 읽기 (순우리말 수)
+const KOR_NUM = ['','일','이','삼','사','오','육','칠','팔','구'];
+const KOR_TEN = ['','십','이십','삼십','사십','오십','육십','칠십','팔십','구십'];
+function toKoreanNumber(n) {
+  if (n <= 0) return '영';
+  if (n < 10) return KOR_NUM[n];
+  const tens = Math.floor(n / 10);
+  const ones = n % 10;
+  return KOR_TEN[tens] + KOR_NUM[ones];
+}
+
+function startExerciseTimer(exId) {
+  if (activeTimer) {
+    stopExerciseTimer();
+    return;
+  }
+
+  const r = ROUTINES.find(x => x.id === exId);
+  const target = values[exId] || prefilled[exId] || r.defaultVal || 5;
+
+  const btn  = document.getElementById(`timerbtn-${exId}`);
+  const disp = document.getElementById(`timerdisp-${exId}`);
+  if (btn) { btn.textContent = '■ 정지'; btn.classList.add('running'); }
+  if (disp) disp.textContent = `목표 ${target}초 · 5초 뒤 시작...`;
+
+  activeTimer = { exId, seconds: 0, targetHit: false, intervalId: null, countdownId: null, target };
+
+  speak('5초 뒤에 시작합니다.');
+
+  // 5,4,3,2,1 카운트다운 (1초 간격)
+  let cd = 5;
+  const countdownId = setInterval(() => {
+    if (!activeTimer || activeTimer.exId !== exId) { clearInterval(countdownId); return; }
+    if (disp) disp.textContent = `${cd}... (목표 ${target}초)`;
+    speak(String(cd));
+    cd--;
+    if (cd <= 0) {
+      clearInterval(countdownId);
+      speak('시작');
+      if (disp) disp.textContent = `0초 진행 중...`;
+
+      activeTimer.intervalId = setInterval(() => {
+        if (!activeTimer || activeTimer.exId !== exId) return;
+        activeTimer.seconds += 1;
+        const s = activeTimer.seconds;
+
+        if (!activeTimer.targetHit && s >= activeTimer.target) {
+          activeTimer.targetHit = true;
+          speak('성공!');
+          if (disp) disp.textContent = `🎉 성공! ${s}초 진행 중 (계속)`;
+        } else {
+          speak(toKoreanNumber(s));
+          if (disp) disp.textContent = `${s}초 진행 중...`;
+        }
+      }, 1000);
+    }
+  }, 1000);
+
+  activeTimer.countdownId = countdownId;
+}
+
+function stopExerciseTimer() {
+  if (!activeTimer) return;
+  const { exId, intervalId, countdownId } = activeTimer;
+  clearInterval(countdownId);
+  clearInterval(intervalId);
+  window.speechSynthesis.cancel();
+
+  const btn  = document.getElementById(`timerbtn-${exId}`);
+  const disp = document.getElementById(`timerdisp-${exId}`);
+  if (btn) { btn.textContent = '▶ 타이머'; btn.classList.remove('running'); }
+  if (disp) disp.textContent = '';
+
+  activeTimer = null;
 }
 
 function isDone(r, val) {
