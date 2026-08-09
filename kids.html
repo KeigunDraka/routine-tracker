@@ -142,6 +142,39 @@
     line-height: 1.45;
   }
 
+  .exercise-desc-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 3px;
+  }
+
+  .exercise-desc-row .exercise-desc {
+    margin-top: 0;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .verify-arrow-line {
+    flex: 1;
+    height: 0;
+    min-width: 8px;
+    border-top: 1.5px dashed #f7c948;
+    position: relative;
+  }
+
+  .verify-arrow-line::after {
+    content: '';
+    position: absolute;
+    right: -1px;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    border-top: 1.5px solid #f7c948;
+    border-right: 1.5px solid #f7c948;
+    transform: translateY(-50%) rotate(45deg);
+  }
+
   /* 운동 자세 사진 */
   .exercise-photo-wrap {
     width: 100%;
@@ -816,8 +849,8 @@ const EX_IMG = {"spine1": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2w
 const EXERCISES = [
   { id: 'pushup',   label: '팔굽혀펴기', emoji: '🤸', unit: '개', abbr: 'PU', cls: 'rcal-pu' },
   { id: 'squat',    label: '스쿼트',     emoji: '🦵', unit: '개', abbr: 'SQ', cls: 'rcal-sq' },
-  { id: 'legraise', label: '다리들기',   emoji: '🦶', unit: '개', abbr: 'LR', cls: 'rcal-lr' },
-  { id: 'superman', label: '슈퍼맨',     emoji: '🦸', unit: '개', abbr: 'SM', cls: 'rcal-sm' },
+  { id: 'legraise', label: '다리들기',   emoji: '🦶', unit: '개', abbr: 'LR', cls: 'rcal-lr', hidden: true },
+  { id: 'superman', label: '슈퍼맨',     emoji: '🦸', unit: '개', abbr: 'SM', cls: 'rcal-sm', hidden: true },
   { id: 'hang',     label: '매달리기',   emoji: '🙌', unit: '초', abbr: 'H',  cls: 'rcal-hg', isTime: true },
   { id: 'spine1',  label: '척추 늘리기',           desc: '양쪽 무릎 세우고 팔꿈치 90도, 아치 세우고 엉덩이 조이고 아랫배 힘주어 허리로 바닥 누르기', emoji: '🧘', imgKey: 'spine1',  unit: '회', abbr: 'S1', cls: 'rcal-s1', step: 5 },
   { id: 'spine2',  label: '꼬리뼈 들기',           desc: '무릎·팔꿈치 90도, 날개뼈와 뒤통수는 바닥에 붙인 채 꼬리뼈만 들기', emoji: '🧘', imgKey: 'spine2',  unit: '초', abbr: 'S2', cls: 'rcal-s2', isTime: true, step: 5 },
@@ -833,7 +866,7 @@ const EXERCISES = [
   { id: 'neck1',   label: '벽에 기대 버티기',        desc: '벽에 등과 뒤통수 붙이고 자세 유지하며 버티기', emoji: '🦒', imgKey: 'neck1',   unit: '초', abbr: 'NK', cls: 'rcal-nk', isTime: true, step: 5 },
 ];
 
-const VERIFY = { id: 'verify', label: '단톡방에 사진올리기', emoji: '📷', desc: '오늘 운동한 모습을 인증했어요' };
+const VERIFY = { id: 'verify', label: '단톡방에 사진올리기', emoji: '📷', desc: '단톡방에 인증했으면 눌러주세요' };
 
 const DAYS      = ['일','월','화','수','목','금','토'];
 const MONTHS_EN = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
@@ -907,12 +940,32 @@ function loadRecentVals() {
 // ── 음성 타이머 (TTS) ─────────────────────────────
 let activeTimer = null; // { exId, seconds, targetHit, intervalId }
 
+// ── TTS 음성 목록 준비 ─────────────────────────────
+let koreanVoice = null;
+let voicesReady = false;
+
+function loadVoices() {
+  const voices = window.speechSynthesis.getVoices();
+  if (voices && voices.length > 0) {
+    koreanVoice = voices.find(v => v.lang === 'ko-KR') || voices.find(v => v.lang && v.lang.startsWith('ko')) || null;
+    voicesReady = true;
+  }
+}
+
+if ('speechSynthesis' in window) {
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+
 function speak(text) {
   try {
-    window.speechSynthesis.cancel();
+    if (!('speechSynthesis' in window)) return;
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = 'ko-KR';
     utter.rate = 1.0;
+    utter.volume = 1.0;
+    if (koreanVoice) utter.voice = koreanVoice;
+    // 이전 발화를 취소하지 않고 큐에 쌓아서 재생 (cancel은 일부 브라우저에서 다음 발화까지 씹히게 만듦)
     window.speechSynthesis.speak(utter);
   } catch (e) { /* TTS 미지원 브라우저는 조용히 무시 */ }
 }
@@ -941,7 +994,9 @@ function startExerciseTimer(exId) {
   const btn  = document.getElementById(`timerbtn-${exId}`);
   const disp = document.getElementById(`timerdisp-${exId}`);
   if (btn) { btn.textContent = '■ 정지'; btn.classList.add('running'); }
-  if (disp) disp.textContent = `목표 ${target}초 · 5초 뒤 시작합니다...`;
+
+  const ttsWarning = ('speechSynthesis' in window) ? '' : ' (음성 미지원 기기)';
+  if (disp) disp.textContent = `목표 ${target}초 · 5초 뒤 시작합니다...${ttsWarning}`;
 
   activeTimer = { exId, seconds: 0, targetHit: false, intervalId: null, countdownId: null, target };
 
@@ -1061,7 +1116,35 @@ function renderCards() {
   const container = document.getElementById('mainCards');
   container.innerHTML = '';
 
-  EXERCISES.forEach(ex => {
+  // ── 인증 카드 (카메라 아이콘, 완료 토글만) — 맨 위에 표시 ──
+  const vCard = document.createElement('div');
+  vCard.className = 'exercise-card verify-card' + (verified ? ' done' : '');
+  vCard.id = 'card-verify';
+
+  const weekStatus = getWeekVerifyStatus();
+  const lampsHTML = weekStatus.map(w => {
+    let cls = 'week-lamp';
+    if (w.verified) cls += ' lit';
+    if (w.isToday)  cls += ' today';
+    return `<div class="week-lamp-col"><div class="${cls}"></div><span class="week-lamp-label">${w.label}</span></div>`;
+  }).join('');
+
+  vCard.innerHTML = `
+    <div class="exercise-header" onclick="toggleVerify()" style="cursor:pointer">
+      <div class="exercise-emoji">${VERIFY.emoji}</div>
+      <div class="exercise-info">
+        <div class="exercise-name">${VERIFY.label}</div>
+        <div class="exercise-desc-row">
+          <span class="exercise-desc">${VERIFY.desc}</span>
+          <div class="verify-arrow-line"></div>
+        </div>
+      </div>
+      <div class="verify-check-btn">${verified ? '✅' : '⬜'}</div>
+    </div>
+    <div class="week-lamp-row">${lampsHTML}</div>`;
+  container.appendChild(vCard);
+
+  EXERCISES.filter(ex => !ex.hidden).forEach(ex => {
     const v      = todayVals[ex.id] || 0;
     const done   = v > 0;
     const isTime = !!ex.isTime;
@@ -1135,37 +1218,13 @@ function renderCards() {
       }
     }
   }
-
-  // ── 인증 카드 (카메라 아이콘, 완료 토글만) ──
-  const vCard = document.createElement('div');
-  vCard.className = 'exercise-card verify-card' + (verified ? ' done' : '');
-  vCard.id = 'card-verify';
-
-  const weekStatus = getWeekVerifyStatus();
-  const lampsHTML = weekStatus.map(w => {
-    let cls = 'week-lamp';
-    if (w.verified) cls += ' lit';
-    if (w.isToday)  cls += ' today';
-    return `<div class="week-lamp-col"><div class="${cls}"></div><span class="week-lamp-label">${w.label}</span></div>`;
-  }).join('');
-
-  vCard.innerHTML = `
-    <div class="exercise-header" onclick="toggleVerify()" style="cursor:pointer">
-      <div class="exercise-emoji">${VERIFY.emoji}</div>
-      <div class="exercise-info">
-        <div class="exercise-name">${VERIFY.label}</div>
-        <div class="exercise-desc">${VERIFY.desc}</div>
-      </div>
-      <div class="verify-check-btn">${verified ? '✅' : '⬜'}</div>
-    </div>
-    <div class="week-lamp-row">${lampsHTML}</div>`;
-  container.appendChild(vCard);
 }
 
 // ── 프로그레스 렌더링 ─────────────────────────────
 function renderProgress() {
-  const total = EXERCISES.length;
-  let doneCount = EXERCISES.filter(ex => (todayVals[ex.id] || 0) > 0).length;
+  const visible = EXERCISES.filter(ex => !ex.hidden);
+  const total = visible.length;
+  let doneCount = visible.filter(ex => (todayVals[ex.id] || 0) > 0).length;
   const pct = Math.round(doneCount / total * 100);
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('progressLabel').textContent = `${doneCount} / ${total} 완료`;

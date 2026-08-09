@@ -966,12 +966,31 @@ function renderRoutines() {
 // ── 음성 타이머 (TTS) ─────────────────────────────
 let activeTimer = null; // { exId, seconds, targetHit, intervalId, target, countdownId }
 
+// ── TTS 음성 목록 준비 ─────────────────────────────
+let koreanVoice = null;
+let voicesReady = false;
+
+function loadVoices() {
+  const voices = window.speechSynthesis.getVoices();
+  if (voices && voices.length > 0) {
+    koreanVoice = voices.find(v => v.lang === 'ko-KR') || voices.find(v => v.lang && v.lang.startsWith('ko')) || null;
+    voicesReady = true;
+  }
+}
+
+if ('speechSynthesis' in window) {
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+
 function speak(text) {
   try {
-    window.speechSynthesis.cancel();
+    if (!('speechSynthesis' in window)) return;
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = 'ko-KR';
     utter.rate = 1.0;
+    utter.volume = 1.0;
+    if (koreanVoice) utter.voice = koreanVoice;
     window.speechSynthesis.speak(utter);
   } catch (e) { /* TTS 미지원 브라우저는 조용히 무시 */ }
 }
@@ -999,7 +1018,9 @@ function startExerciseTimer(exId) {
   const btn  = document.getElementById(`timerbtn-${exId}`);
   const disp = document.getElementById(`timerdisp-${exId}`);
   if (btn) { btn.textContent = '■ 정지'; btn.classList.add('running'); }
-  if (disp) disp.textContent = `목표 ${target}초 · 5초 뒤 시작...`;
+
+  const ttsWarning = ('speechSynthesis' in window) ? '' : ' (음성 미지원 기기)';
+  if (disp) disp.textContent = `목표 ${target}초 · 5초 뒤 시작...${ttsWarning}`;
 
   activeTimer = { exId, seconds: 0, targetHit: false, intervalId: null, countdownId: null, target };
 
