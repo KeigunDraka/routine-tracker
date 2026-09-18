@@ -87,39 +87,42 @@
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
       border-radius: 10px;
-      padding: 9px 12px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
     }
 
-    .time-label { font-size: 11px; color: #555; margin-bottom: 4px; display: block; }
+    .time-label { font-size: 12px; color: #777; white-space: nowrap; flex-shrink: 0; }
 
     .time-input {
       background: transparent;
       border: none;
       outline: none;
       color: #fff;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 500;
       width: 100%;
+      text-align: right;
       font-family: inherit;
       letter-spacing: 0.02em;
     }
 
-    .time-input::placeholder { color: #2a2a2a; font-size: 18px; }
-
-    .time-hint { font-size: 10px; color: #333; margin-top: 2px; }
+    .time-input::placeholder { color: #2a2a2a; font-size: 16px; }
 
     /* ── 루틴 ── */
-    .routines { display: flex; flex-direction: column; gap: 6px; }
+    .routines { display: flex; flex-direction: column; gap: 4px; }
 
     .routine-item {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
-      border-radius: 10px;
-      padding: 8px 12px;
+      border-radius: 9px;
+      padding: 5px 10px;
       transition: border-color 0.15s, background 0.15s;
     }
 
@@ -131,7 +134,7 @@
     .routine-item.toggle-item { cursor: pointer; }
 
     .check-circle {
-      width: 20px; height: 20px;
+      width: 17px; height: 17px;
       border-radius: 50%;
       border: 2px solid #333;
       flex-shrink: 0;
@@ -154,21 +157,21 @@
 
     .routine-item.done .check-circle::after { opacity: 1; }
 
-    .routine-label { font-size: 13.5px; color: #aaa; flex: 1; min-width: 0; line-height: 1.3; }
+    .routine-label { font-size: 13px; color: #aaa; flex: 1; min-width: 0; line-height: 1.25; }
     .routine-item.done .routine-label { color: #e0e0e0; }
 
     .routine-thumb {
-      width: 50px;
-      height: 30px;
-      border-radius: 6px;
+      width: 44px;
+      height: 20px;
+      border-radius: 5px;
       object-fit: cover;
       flex-shrink: 0;
       background: #0d0d0d;
     }
 
     .routine-thumb.thumb-tall {
-      width: 22px;
-      height: 40px;
+      width: 19px;
+      height: 28px;
     }
 
     .routine-timer-row {
@@ -176,18 +179,18 @@
       align-items: center;
       gap: 8px;
       width: 100%;
-      margin-top: 6px;
-      padding-top: 6px;
+      margin-top: 4px;
+      padding-top: 4px;
       border-top: 1px solid #222;
     }
 
     .timer-btn {
-      padding: 6px 12px;
+      padding: 5px 10px;
       border-radius: 7px;
       border: 1px solid #2d4a6a;
       background: #14243a;
       color: #6aafd6;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
       cursor: pointer;
       font-family: inherit;
@@ -217,12 +220,12 @@
       border-radius: 6px;
       outline: none;
       color: #fff;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       font-family: inherit;
-      width: 54px;
+      width: 46px;
       text-align: center;
-      padding: 5px 4px;
+      padding: 4px 4px;
     }
 
     .routine-num:focus { border-color: #40916c; }
@@ -236,13 +239,13 @@
       border: 1px solid #2d6a4f;
       color: #40916c;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       font-family: inherit;
-      padding: 5px 9px;
+      padding: 4px 8px;
       cursor: pointer;
       white-space: nowrap;
-      min-height: 30px;
+      min-height: 26px;
     }
 
     .plus-btn:active { background: #243a2e; }
@@ -299,17 +302,6 @@
     .running-card.done .running-card-label { color: #52b788; }
     .running-card.done .run-check { background: #40916c; border-color: #40916c; }
     .running-card.done .run-check::after { opacity: 1; }
-    .running-card.done .walk-check { background: #40916c; border-color: #40916c; }
-    .running-card.done .walk-check::after { opacity: 1; }
-    .walk-check::after {
-      content: '';
-      width: 4px; height: 8px;
-      border: 2px solid #fff;
-      border-top: none; border-left: none;
-      transform: rotate(45deg) translateY(-1px);
-      opacity: 0;
-      transition: opacity 0.15s;
-    }
     .run-check::after {
       content: '';
       width: 4px; height: 8px;
@@ -340,6 +332,7 @@
 
     /* ── 버튼 ── */
     .btn-row { display: flex; gap: 8px; margin-top: 16px; }
+    .btn-row-top { margin-top: 6px; margin-bottom: 4px; }
 
     .btn {
       flex: 1;
@@ -533,6 +526,65 @@
 
     .report-subtitle { font-size: 10px; color: #555; letter-spacing: 0.18em; font-weight: 600; }
 
+    /* 인생토탈 버튼 */
+    .rcal-total-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      font-size: 13px;
+      color: #ccc;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .rcal-total-btn:active { background: #222; }
+    .rcal-total-btn-num { color: #52b788; font-size: 16px; font-weight: 800; }
+
+    /* 이전/다음 달에서 끌어온 칸 */
+    .rcal-outside { opacity: 0.45; }
+
+    /* 전체 운동 총 횟수 목록 화면 */
+    .rcal-back-btn {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #888;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      margin-bottom: 14px;
+    }
+    .rcal-back-btn:active { background: #222; }
+    .rcal-totals-grand {
+      text-align: center;
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 14px;
+    }
+    .rcal-totals-grand b { color: #52b788; font-size: 22px; font-weight: 800; margin-left: 4px; }
+    .rcal-totals-list {
+      background: #181818;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 4px 16px;
+    }
+    .rcal-total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      padding: 10px 0;
+      border-bottom: 1px solid #232323;
+    }
+    .rcal-total-row:last-child { border-bottom: none; }
+    .rcal-total-row-label { color: #aaa; }
+    .rcal-total-row-val { color: #fff; font-weight: 600; }
+
     /* 범례 */
     .rcal-legend {
       display: flex;
@@ -627,6 +679,9 @@
     .rcal-s9  { font-size: 8px; color: #64b5f6; font-weight: 600; }
     .rcal-s10 { font-size: 8px; color: #ba68c8; font-weight: 600; }
     .rcal-nk  { font-size: 8px; color: #ffca28; font-weight: 600; }
+    .rcal-bl  { font-size: 8px; color: #7986cb; font-weight: 600; }
+    .rcal-ar  { font-size: 8px; color: #4db6ac; font-weight: 600; }
+    .rcal-pl  { font-size: 8px; color: #e57373; font-weight: 600; }
 
     .rcal-run { font-size: 7.5px; color: #ef5350; margin-top: 1px; line-height: 1.3; }
     .rcal-run-inline { color: #ef5350; }
@@ -675,27 +730,33 @@
     <button class="nav-btn" onclick="changeDay(1)">›</button>
   </div>
 
+  <!-- 상단 빠른 버튼 -->
+  <div class="btn-row btn-row-top">
+    <button class="btn btn-save" onclick="saveDay()">저장</button>
+    <button class="btn btn-report" onclick="showReport()">리포트</button>
+    <button class="btn btn-export" onclick="exportData()">내보내기</button>
+    <button class="btn btn-import" onclick="importData()">가져오기</button>
+  </div>
+
   <!-- 수면 -->
   <div class="section-title section-title-row">
-    <span>수면</span><span class="rev-badge">Rev. 5</span>
+    <span>수면</span><span class="rev-badge">Rev. 6</span>
   </div>
   <div class="sleep-row">
     <div class="time-group">
-      <span class="time-label">취침시간</span>
+      <span class="time-label">취침</span>
       <input class="time-input" id="sleepTime" type="text" inputmode="numeric"
              placeholder="23:00" maxlength="5" oninput="autoColonTime(this)">
-      <div class="time-hint">전날 밤 · 24시간</div>
     </div>
     <div class="time-group">
-      <span class="time-label">기상시간</span>
+      <span class="time-label">기상</span>
       <input class="time-input" id="wakeTime" type="text" inputmode="numeric"
              placeholder="05:00" maxlength="5" oninput="autoColonTime(this)">
-      <div class="time-hint">24시간</div>
     </div>
   </div>
 
-  <!-- Daily 9 -->
-  <div class="section-title">Daily 9</div>
+  <!-- Daily Routine -->
+  <div class="section-title">DAILY ROUTINE</div>
   <div class="routines" id="routineList"></div>
 
   <!-- 달리기 -->
@@ -720,18 +781,6 @@
         <input class="field-input" id="runPace" type="text" placeholder="6:00" inputmode="numeric" oninput="autoColonPace(this); updateRunUI()">
         <div class="field-unit">min/km</div>
       </div>
-    </div>
-  </div>
-
-  <div class="running-card" id="walkCard">
-    <div class="running-card-top">
-      <div class="check-circle walk-check"></div>
-      <span class="running-card-label">걷기</span>
-    </div>
-    <div class="field-group">
-      <span class="field-label">걸음수</span>
-      <input class="field-input" id="walkSteps" type="number" min="0" placeholder="0" oninput="updateWalkUI()">
-      <div class="field-unit">걸음</div>
     </div>
   </div>
 
@@ -794,7 +843,7 @@ const ROUTINES = [
   { id: 'pushup',    label: '팔굽혀펴기',  type: 'number', unit: '개',    step: 1,  defaultVal: 3 },
   { id: 'squat',     label: '스쿼트',      type: 'number', unit: '개',    step: 1,  defaultVal: 3 },
   { id: 'spine1',  label: '척추 늘리기',            type: 'number', unit: '회', step: 5, defaultVal: 10, imgKey: 'spine1'  },
-  { id: 'spine2',  label: '꼬리뼈 들기',            type: 'number', unit: '초', step: 5, defaultVal: 10, imgKey: 'spine2'  },
+  { id: 'spine2',  label: '꼬리뼈 들기',            type: 'number', unit: '회', step: 5, defaultVal: 10, imgKey: 'spine2'  },
   { id: 'spine3',  label: '하늘보고 팔다리 교차들기', type: 'number', unit: '회', step: 5, defaultVal: 10, imgKey: 'spine3'  },
   { id: 'spine4',  label: '다리로 원 그리기',         type: 'number', unit: '회', step: 5, defaultVal: 10, imgKey: 'spine4'  },
   { id: 'spine5',  label: '엉덩이 들기',            type: 'number', unit: '초', step: 5, defaultVal: 30, imgKey: 'spine5'  },
@@ -805,6 +854,9 @@ const ROUTINES = [
   { id: 'spine9',  label: '엎드려 팔다리 교차들기',    type: 'number', unit: '회', step: 5, defaultVal: 10, imgKey: 'spine9'  },
   { id: 'spine10', label: '전신운동',               type: 'number', unit: '회', step: 1, defaultVal: 5,  imgKey: 'spine10' },
   { id: 'neck1',   label: '벽에 기대 버티기',         type: 'number', unit: '초', step: 5, defaultVal: 30, imgKey: 'neck1'   },
+  { id: 'bearlizard', label: '베어워크/리자드워크',     type: 'number', unit: '회', step: 5, defaultVal: 10 },
+  { id: 'ankleraise', label: '발목잡고 엉덩이 들기',    type: 'number', unit: '회', step: 5, defaultVal: 10 },
+  { id: 'plow',       label: '쟁기자세',              type: 'number', unit: '초', step: 5, defaultVal: 30 },
   { id: 'handstand', label: '물구나무',    type: 'number', unit: '초',    step: 5,  defaultVal: 20 },
   { id: 'twitter',   label: 'X 글올리기',  type: 'toggle', hidden: true },
   { id: 'legraise',  label: '다리들기',    type: 'number', unit: '개',    step: 1,  defaultVal: 3, hidden: true },
@@ -815,7 +867,9 @@ const DAYS   = ['일','월','화','수','목','금','토'];
 const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 
 // ── 상태 ───────────────────────────────────────────
-const realToday  = new Date();
+// 페이지를 열어둔 채로 자정을 넘겨도 날짜가 바뀌도록,
+// 고정된 값 대신 호출할 때마다 휴대폰의 현재 시각을 새로 읽는다
+function getRealToday() { return new Date(); }
 let selectedDate = new Date();
 let values       = {};
 let prefilled    = {};
@@ -842,7 +896,7 @@ function dateToKey(d) {
 }
 
 function selectedKey() { return dateToKey(selectedDate); }
-function todayKey()    { return dateToKey(realToday); }
+function todayKey()    { return dateToKey(getRealToday()); }
 function isViewingToday() { return selectedKey() === todayKey(); }
 
 // ── 날짜 이동 ──────────────────────────────────────
@@ -854,7 +908,7 @@ function changeDay(delta) {
 }
 
 function goToday() {
-  selectedDate = new Date(realToday);
+  selectedDate = getRealToday();
   loadDate();
 }
 
@@ -892,21 +946,26 @@ function clearForm() {
   document.getElementById('runKm').value     = '';
   document.getElementById('runHr').value     = '';
   document.getElementById('runPace').value   = '';
-  document.getElementById('walkSteps').value = '';
   document.getElementById('memo').value      = '';
   updateRunUI();
-  updateWalkUI();
 }
 
-// ── 전날 값 또는 기본값을 prefilled에 설정 ─────────
+// ── 최근 3일 이내 값 또는 기본값을 prefilled에 설정 ─
+// 하루를 건너뛰어도(그날 기록이 없거나 값이 비어 있어도) 곧바로
+// 기본값으로 초기화되지 않도록, 최대 3일 전까지 거슬러 올라가며
+// 각 루틴별로 가장 최근에 입력된 값을 찾는다.
 function loadPrefilled() {
-  const key   = selectedKey();
-  const dates = Object.keys(db).filter(d => d < key).sort().reverse();
-  const last  = dates.length ? db[dates[0]] : null;
   ROUTINES.forEach(r => {
     if (r.type !== 'number') return;
-    const v = last?.routines?.[r.id];
-    prefilled[r.id] = (v !== null && v !== undefined) ? v : r.defaultVal;
+    let found = null;
+    for (let back = 1; back <= 3; back++) {
+      const d = new Date(selectedDate);
+      d.setDate(d.getDate() - back);
+      const rec = db[dateToKey(d)];
+      const v = rec?.routines?.[r.id];
+      if (v !== null && v !== undefined && v !== '') { found = v; break; }
+    }
+    prefilled[r.id] = (found !== null) ? found : r.defaultVal;
   });
 }
 
@@ -927,11 +986,7 @@ function loadFromRecord(rec) {
     if (rec.running.heartRate) document.getElementById('runHr').value   = rec.running.heartRate;
     if (rec.running.pace)      document.getElementById('runPace').value = rec.running.pace;
   }
-  if (rec.walking && rec.walking.steps) {
-    document.getElementById('walkSteps').value = rec.walking.steps;
-  }
   updateRunUI();
-  updateWalkUI();
 }
 
 // ── 루틴 렌더링 ────────────────────────────────────
@@ -1015,6 +1070,9 @@ if ('speechSynthesis' in window) {
 function speak(text) {
   try {
     if (!('speechSynthesis' in window)) return;
+    // 이전에 아직 재생 중이거나 대기 중인 음성이 있으면 취소해서
+    // 짧은 숫자(한 자리)가 큐에 쌓여 빠르게 몰아 재생되는 문제를 막는다
+    window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = 'ko-KR';
     utter.rate = 1.0;
@@ -1167,16 +1225,12 @@ function saveDay() {
   const pace = document.getElementById('runPace').value.trim();
   const hasRun = km || hr || pace;
 
-  const steps = parseInt(document.getElementById('walkSteps').value);
-  const hasWalk = steps > 0;
-
   db[key] = {
     date:      key,
     sleepTime: document.getElementById('sleepTime').value || null,
     wakeTime:  document.getElementById('wakeTime').value  || null,
     routines:  routineData,
     running:   hasRun ? { km: km || null, heartRate: hr || null, pace: pace || null } : null,
-    walking:   hasWalk ? { steps: steps } : null,
     memo:      document.getElementById('memo').value.trim() || null,
   };
 
@@ -1245,11 +1299,6 @@ function updateRunUI() {
                   document.getElementById('runHr').value ||
                   document.getElementById('runPace').value);
   document.getElementById('runningCard').classList.toggle('done', done);
-}
-
-function updateWalkUI() {
-  const done = !!document.getElementById('walkSteps').value;
-  document.getElementById('walkCard').classList.toggle('done', done);
 }
 
 function autoColonPace(input) {
@@ -1358,10 +1407,6 @@ function showPopup(dateStr) {
       if (parts) html += `<div class="popup-row"><span class="popup-key">달리기</span><span class="popup-val done">${parts}</span></div>`;
     }
 
-    if (rec.walking && rec.walking.steps) {
-      html += `<div class="popup-row"><span class="popup-key">걷기</span><span class="popup-val done">${rec.walking.steps.toLocaleString()}걸음</span></div>`;
-    }
-
     if (rec.memo) {
       html += `<div class="popup-row" style="flex-direction:column;align-items:flex-start;gap:4px"><span class="popup-key">메모</span><span style="font-size:12px;color:#888;line-height:1.5">${rec.memo}</span></div>`;
     }
@@ -1387,8 +1432,11 @@ function toast(msg) {
 }
 
 // ── 리포트 ────────────────────────────────────────
+let reportView = 'calendar'; // 'calendar' | 'totals'
+
 function showReport() {
   reportMonth = { y: new Date().getFullYear(), m: new Date().getMonth() };
+  reportView  = 'calendar';
   renderReport();
   document.getElementById('reportOverlay').classList.add('open');
 }
@@ -1401,6 +1449,19 @@ function changeReportMonth(delta) {
   reportMonth.m += delta;
   if (reportMonth.m < 0)  { reportMonth.m = 11; reportMonth.y--; }
   if (reportMonth.m > 11) { reportMonth.m = 0;  reportMonth.y++; }
+  reportView = 'calendar';
+  renderReport();
+}
+
+// 인생토탈 버튼 → 전체 운동 총 횟수 목록 화면으로 전환
+function showTotalsView() {
+  reportView = 'totals';
+  renderReport();
+}
+
+// 목록 화면 → 달력 화면으로 복귀
+function showCalendarView() {
+  reportView = 'calendar';
   renderReport();
 }
 
@@ -1410,9 +1471,15 @@ function renderReport() {
                     'JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
   document.getElementById('reportMonthLabel').textContent = `${MONTH_EN[m]} ${y}`;
 
+  const body = document.getElementById('reportBody');
+
+  if (reportView === 'totals') {
+    renderTotalsView(body);
+    return;
+  }
+
   const daysInMonth = new Date(y, m + 1, 0).getDate();
   const firstDay    = new Date(y, m, 1).getDay();
-  const body        = document.getElementById('reportBody');
   const tKey        = todayKey();
 
   // 범례
@@ -1436,7 +1503,13 @@ function renderReport() {
     { id: 'spine9',  abbr: 'S9',  cls: 'rcal-s9',  label: '엎드교차들기' },
     { id: 'spine10', abbr: 'S10', cls: 'rcal-s10', label: '전신운동' },
     { id: 'neck1',   abbr: 'NK',  cls: 'rcal-nk',  label: '벽 목운동' },
+    { id: 'bearlizard', abbr: 'BL', cls: 'rcal-bl', label: '베어/리자드워크' },
+    { id: 'ankleraise', abbr: 'AR', cls: 'rcal-ar', label: '발목잡고 엉덩이들기' },
+    { id: 'plow',       abbr: 'PL', cls: 'rcal-pl', label: '쟁기자세' },
   ];
+
+  const lifetimeTotal = computeLifetimeTotal();
+  const totalHtml = `<button class="rcal-total-btn" onclick="showTotalsView()">인생토탈 횟수 <span class="rcal-total-btn-num">${lifetimeTotal.toLocaleString()}</span> ›</button>`;
 
   let legend = '<div class="rcal-legend">';
   RMETA.forEach(r => {
@@ -1445,49 +1518,37 @@ function renderReport() {
   legend += `<span class="rcal-legend-item"><span class="rcal-run-inline">▶</span> Running Distance/Pace/HR</span>`;
   legend += '</div>';
 
-  // 달력 그리드
-  let grid = '<div class="rcal-grid">';
-  ['SUN','MON','TUE','WED','THU','FRI','SAT'].forEach((d, i) => {
-    const cls = i === 0 ? ' rcal-sun-hdr' : i === 6 ? ' rcal-sat-hdr' : '';
-    grid += `<div class="rcal-header${cls}">${d}</div>`;
-  });
-
-  for (let i = 0; i < firstDay; i++) {
-    grid += '<div class="rcal-cell rcal-empty"></div>';
-  }
-
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  // 한 칸(하루)의 내용을 만드는 헬퍼. isOutside면 이전 달에서 끌어온 날짜라는 뜻
+  function buildDayCell(cellY, cellM, cellD, isOutside) {
+    const dateStr = `${cellY}-${String(cellM+1).padStart(2,'0')}-${String(cellD).padStart(2,'0')}`;
     const rec     = db[dateStr];
     const isToday = dateStr === tKey;
-    const isSat   = new Date(y, m, d).getDay() === 6;
+    const isSat   = new Date(cellY, cellM, cellD).getDay() === 6;
+    const outCls  = isOutside ? ' rcal-outside' : '';
 
-    grid += `<div class="rcal-cell${isToday ? ' rcal-today' : ''}${isSat ? ' rcal-sat-cell' : ''}">`;
+    let cell = `<div class="rcal-cell${isToday ? ' rcal-today' : ''}${isSat ? ' rcal-sat-cell' : ''}${outCls}">`;
 
     // 상단 행: 취침/기상 시간(왼쪽) + 날짜(오른쪽)
-    grid += '<div class="rcal-top-row">';
-    grid += '<div class="rcal-time-col">';
+    cell += '<div class="rcal-top-row">';
+    cell += '<div class="rcal-time-col">';
     const sc = rec?.sleepTime ? timeDeviationColor(rec.sleepTime, 21, 0, true) : '#2a2a2a';
     const wc = rec?.wakeTime  ? timeDeviationColor(rec.wakeTime,  5, 0, false) : '#2a2a2a';
-    grid += `<div style="color:${sc}">${rec?.sleepTime || '—'}</div>`;
-    grid += `<div style="color:${wc}">${rec?.wakeTime  || '—'}</div>`;
-    grid += '</div>';
-    grid += `<div class="rcal-date${isToday ? ' rcal-today-date' : ''}">${d}</div>`;
-    grid += '</div>';
+    cell += `<div style="color:${sc}">${rec?.sleepTime || '—'}</div>`;
+    cell += `<div style="color:${wc}">${rec?.wakeTime  || '—'}</div>`;
+    cell += '</div>';
+    cell += `<div class="rcal-date${isToday ? ' rcal-today-date' : ''}">${cellD}</div>`;
+    cell += '</div>';
 
     if (rec) {
-      const doneList = RMETA.filter(rm => {
-        const v = rec.routines?.[rm.id];
-        return rm.toggle ? !!v : !!v;
-      });
+      const doneList = RMETA.filter(rm => !!rec.routines?.[rm.id]);
       for (let i = 0; i < doneList.length; i += 3) {
-        grid += '<div class="rcal-row">';
+        cell += '<div class="rcal-row">';
         doneList.slice(i, i + 3).forEach(rm => {
           const v = rec.routines?.[rm.id];
           const text = rm.toggle ? `${rm.abbr}✓` : `${rm.abbr}${v}`;
-          grid += `<span class="${rm.cls}">${text}</span>`;
+          cell += `<span class="${rm.cls}">${text}</span>`;
         });
-        grid += '</div>';
+        cell += '</div>';
       }
 
       if (rec.running) {
@@ -1495,21 +1556,79 @@ function renderReport() {
         const pace = rec.running.pace      ? `${rec.running.pace}`        : '';
         const hr   = rec.running.heartRate ? `${rec.running.heartRate}♥` : '';
         const parts = [km, pace, hr].filter(Boolean).join(' ');
-        if (parts) grid += `<div class="rcal-run">▶${parts}</div>`;
-      }
-
-      if (rec.walking && rec.walking.steps) {
-        grid += `<div class="rcal-run">🚶${rec.walking.steps.toLocaleString()}</div>`;
+        if (parts) cell += `<div class="rcal-run">▶${parts}</div>`;
       }
     } else {
-      grid += '<div class="rcal-row"><span class="rcal-dim">기록없음</span></div>';
+      cell += '<div class="rcal-row"><span class="rcal-dim">기록없음</span></div>';
     }
 
-    grid += '</div>';
+    cell += '</div>';
+    return cell;
+  }
+
+  // 달력 그리드
+  let grid = '<div class="rcal-grid">';
+  ['SUN','MON','TUE','WED','THU','FRI','SAT'].forEach((d, i) => {
+    const cls = i === 0 ? ' rcal-sun-hdr' : i === 6 ? ' rcal-sat-hdr' : '';
+    grid += `<div class="rcal-header${cls}">${d}</div>`;
+  });
+
+  // 이번 달 1일 이전의 빈칸은 실제 지난달 날짜/데이터로 채운다
+  if (firstDay > 0) {
+    const prevLastDateObj = new Date(y, m, 0);
+    const prevY = prevLastDateObj.getFullYear();
+    const prevM = prevLastDateObj.getMonth();
+    const prevLastDate = prevLastDateObj.getDate();
+    for (let i = 0; i < firstDay; i++) {
+      const dayNum = prevLastDate - firstDay + 1 + i;
+      grid += buildDayCell(prevY, prevM, dayNum, true);
+    }
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    grid += buildDayCell(y, m, d, false);
   }
 
   grid += '</div>';
-  body.innerHTML = legend + grid;
+  body.innerHTML = totalHtml + legend + grid;
+}
+
+// 모든 운동별 전체 기간 누적 총 횟수를 계산
+function computeRoutineTotals() {
+  const totals = {};
+  ROUTINES.forEach(r => { if (r.type === 'number') totals[r.id] = 0; });
+  Object.values(db).forEach(rec => {
+    if (!rec.routines) return;
+    ROUTINES.forEach(r => {
+      if (r.type !== 'number') return;
+      const v = rec.routines[r.id];
+      if (typeof v === 'number' && v > 0) totals[r.id] += v;
+    });
+  });
+  return totals;
+}
+
+// 전체 기록 기간을 통틀어 모든 회차형(숫자) 루틴 값을 합산한 인생 누적 총 횟수
+function computeLifetimeTotal() {
+  return Object.values(computeRoutineTotals()).reduce((a, b) => a + b, 0);
+}
+
+// 버튼으로 진입하는 "저장된 모든 운동의 전체 횟수" 목록 화면
+function renderTotalsView(body) {
+  const totals = computeRoutineTotals();
+  const grand  = Object.values(totals).reduce((a, b) => a + b, 0);
+
+  let rows = '';
+  ROUTINES.forEach(r => {
+    if (r.type !== 'number') return;
+    rows += `<div class="rcal-total-row"><span class="rcal-total-row-label">${r.label}</span><span class="rcal-total-row-val">${totals[r.id].toLocaleString()}${r.unit}</span></div>`;
+  });
+
+  body.innerHTML = `
+    <button class="rcal-back-btn" onclick="showCalendarView()">‹ 달력으로 돌아가기</button>
+    <div class="rcal-totals-grand">전체 합계 <b>${grand.toLocaleString()}</b></div>
+    <div class="rcal-totals-list">${rows}</div>
+  `;
 }
 
 // 기준 시간 대비 편차 → green(140)~red(0) HSL 색상
@@ -1561,6 +1680,17 @@ function minsToTimeStr(totalMins) {
 // ── 시작 ───────────────────────────────────────────
 updateDateDisplay();
 loadDate();
+
+// 화면을 켜둔 채로 자정을 넘기는 경우를 대비해 1분마다 날짜 갱신 여부 확인
+let _lastSeenTodayKey = todayKey();
+setInterval(() => {
+  const nowKey = todayKey();
+  if (nowKey !== _lastSeenTodayKey) {
+    _lastSeenTodayKey = nowKey;
+    updateDateDisplay();
+    renderCalendar();
+  }
+}, 60000);
 </script>
 </body>
 </html>
