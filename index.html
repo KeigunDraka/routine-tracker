@@ -421,6 +421,21 @@
     .dot { width: 3px; height: 3px; border-radius: 50%; background: #40916c; }
     .dot.run { background: #4a9eda; }
 
+    /* ── 백업 알림 배너 ── */
+    .backup-banner {
+      display: none;
+      background: #2a1f0d;
+      border: 1px solid #6a4a1e;
+      color: #f0b860;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .backup-banner.show { display: block; }
+
     /* ── 토스트 ── */
     .toast {
       position: fixed;
@@ -717,6 +732,8 @@
 <body>
 <div class="container">
 
+  <div class="backup-banner" id="backupBanner" onclick="exportData()"></div>
+
   <!-- 날짜 네비게이션 -->
   <div class="date-nav">
     <button class="nav-btn" onclick="changeDay(-1)">‹</button>
@@ -740,7 +757,7 @@
 
   <!-- 수면 -->
   <div class="section-title section-title-row">
-    <span>수면</span><span class="rev-badge">Rev. 6</span>
+    <span>수면</span><span class="rev-badge">Rev. 7</span>
   </div>
   <div class="sleep-row">
     <div class="time-group">
@@ -892,7 +909,8 @@ let reportMonth  = { y: new Date().getFullYear(), m: new Date().getMonth() };
 
 // ── 키 ─────────────────────────────────────────────
 function dateToKey(d) {
-  return d.toISOString().slice(0, 10);
+  // 휴대폰 현지 날짜 기준 (UTC 기준이면 UAE 새벽 0~4시 기록이 전날로 저장되는 문제)
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 function selectedKey() { return dateToKey(selectedDate); }
@@ -1236,22 +1254,63 @@ function saveDay() {
 
   localStorage.setItem('routine_db', JSON.stringify(db));
   renderCalendar();
+  updateBackupBanner();
   toast('저장했어요 ✓');
 }
 
-// ── 내보내기 ───────────────────────────────────────
-function exportData() {
+// ── 내보내기 (공유 창 → 카톡·드라이브 등) ─────────
+const BACKUP_KEY  = 'routine_last_backup';
+const BACKUP_DAYS = 7;
+
+async function exportData() {
   const records = Object.values(db).sort((a, b) => a.date.localeCompare(b.date));
   const payload = { exported_at: new Date().toISOString(), records };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  const now  = new Date();
-  a.href     = url;
-  a.download = `routines_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.json`;
+  const json  = JSON.stringify(payload, null, 2);
+  const fname = `routines_${todayKey().replace(/-/g, '')}.json`;
+  const file  = new File([json], fname, { type: 'application/json' });
+
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: '루틴 백업', text: fname });
+      markBackedUp();
+      toast('백업 공유 완료');
+      return;
+    }
+  } catch (e) {
+    if (e && e.name === 'AbortError') { toast('백업을 취소했어요'); return; }
+    // 공유 실패 시 아래 다운로드로 진행
+  }
+
+  const url = URL.createObjectURL(file);
+  const a   = document.createElement('a');
+  a.href = url;
+  a.download = fname;
   a.click();
   URL.revokeObjectURL(url);
-  toast('내보내기 완료');
+  markBackedUp();
+  toast('다운로드 폴더에 저장했어요');
+}
+
+function markBackedUp() {
+  try { localStorage.setItem(BACKUP_KEY, String(Date.now())); } catch (e) {}
+  updateBackupBanner();
+}
+
+function updateBackupBanner() {
+  const el = document.getElementById('backupBanner');
+  if (!el) return;
+  if (Object.keys(db).length === 0) { el.classList.remove('show'); return; }
+  let last = 0;
+  try { last = Number(localStorage.getItem(BACKUP_KEY) || 0); } catch (e) {}
+  const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+  if (days === null || days >= BACKUP_DAYS) {
+    el.textContent = days === null
+      ? '⚠ 아직 백업한 적이 없어요 · 눌러서 백업하기'
+      : `⚠ 마지막 백업 ${days}일 전 · 눌러서 백업하기`;
+    el.classList.add('show');
+  } else {
+    el.classList.remove('show');
+  }
 }
 
 // ── 가져오기 & 병합 ────────────────────────────────
@@ -1680,6 +1739,11 @@ function minsToTimeStr(totalMins) {
 // ── 시작 ───────────────────────────────────────────
 updateDateDisplay();
 loadDate();
+updateBackupBanner();
+// 저장 공간 부족 시 브라우저가 기록을 지우지 않도록 요청 (크롬 리셋까지 막지는 못함)
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist().catch(() => {});
+}
 
 // 화면을 켜둔 채로 자정을 넘기는 경우를 대비해 1분마다 날짜 갱신 여부 확인
 let _lastSeenTodayKey = todayKey();

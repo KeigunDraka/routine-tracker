@@ -774,6 +774,20 @@
     cursor: pointer;
     font-family: 'Nanum Gothic', sans-serif;
   }
+  /* ── 백업 알림 배너 ── */
+  .backup-banner {
+    display: none;
+    background: #2a1f0d;
+    border: 1px solid #6a4a1e;
+    color: #f0b860;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+    margin: 10px 0 0;
+    cursor: pointer;
+    text-align: center;
+  }
+  .backup-banner.show { display: block; }
 </style>
 </head>
 <body>
@@ -783,13 +797,15 @@
   <div class="header-title">오늘의 운동 💪</div>
   <div class="header-date-row">
     <span class="header-date" id="headerDate"></span>
-    <span class="rev-badge">rev.3-2608</span>
+    <span class="rev-badge">rev.4-2611</span>
   </div>
   <div class="progress-bar-wrap">
     <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
   </div>
   <div class="progress-label" id="progressLabel">0 / 17 완료</div>
 </header>
+
+<div class="container"><div class="backup-banner" id="backupBanner" onclick="exportData()"></div></div>
 
 <div class="container" id="mainCards"></div>
 
@@ -1461,19 +1477,70 @@ function toast(msg) {
   setTimeout(() => el.classList.remove('show'), 2000);
 }
 
-// ── 내보내기 ──────────────────────────────────────
-function exportData() {
+// ── 내보내기 (공유 창 → 카톡으로 아빠에게) ─────────
+const BACKUP_KEY  = 'kids_last_backup';
+const NAME_KEY    = 'kids_name';
+const BACKUP_DAYS = 7;
+
+function getKidName() {
+  let name = '';
+  try { name = localStorage.getItem(NAME_KEY) || ''; } catch (e) {}
+  if (!name) {
+    name = (prompt('이름을 적어줘 (백업 파일에 붙어요)') || '').trim();
+    if (name) { try { localStorage.setItem(NAME_KEY, name); } catch (e) {} }
+  }
+  return name.replace(/[\\/:*?"<>|\s]/g, '');
+}
+
+async function exportData() {
+  const name    = getKidName();
   const records = Object.values(db).sort((a, b) => a.date.localeCompare(b.date));
-  const payload = { exported_at: new Date().toISOString(), records };
-  const blob    = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url     = URL.createObjectURL(blob);
-  const a       = document.createElement('a');
-  const now     = new Date();
-  a.href        = url;
-  a.download    = `kids_workout_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.json`;
+  const payload = { exported_at: new Date().toISOString(), name: name || null, records };
+  const json    = JSON.stringify(payload, null, 2);
+  const fname   = `kids_workout_${name ? name + '_' : ''}${todayKey().replace(/-/g, '')}.json`;
+  const file    = new File([json], fname, { type: 'application/json' });
+
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: '운동 기록 백업', text: fname });
+      markBackedUp();
+      toast('백업 보냈어요 ✓');
+      return;
+    }
+  } catch (e) {
+    if (e && e.name === 'AbortError') { toast('백업을 취소했어요'); return; }
+  }
+
+  const url = URL.createObjectURL(file);
+  const a   = document.createElement('a');
+  a.href = url;
+  a.download = fname;
   a.click();
   URL.revokeObjectURL(url);
-  toast('내보내기 완료 ✓');
+  markBackedUp();
+  toast('다운로드 폴더에 저장했어요 ✓');
+}
+
+function markBackedUp() {
+  try { localStorage.setItem(BACKUP_KEY, String(Date.now())); } catch (e) {}
+  updateBackupBanner();
+}
+
+function updateBackupBanner() {
+  const el = document.getElementById('backupBanner');
+  if (!el) return;
+  if (Object.keys(db).length === 0) { el.classList.remove('show'); return; }
+  let last = 0;
+  try { last = Number(localStorage.getItem(BACKUP_KEY) || 0); } catch (e) {}
+  const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+  if (days === null || days >= BACKUP_DAYS) {
+    el.textContent = days === null
+      ? '📦 기록을 아빠한테 백업해 줘! (여기 눌러)'
+      : `📦 백업한 지 ${days}일 됐어! 여기 눌러서 아빠한테 보내 줘`;
+    el.classList.add('show');
+  } else {
+    el.classList.remove('show');
+  }
 }
 
 // ── 가져오기 ──────────────────────────────────────
@@ -1508,6 +1575,10 @@ function importData() {
 
 // ── 시작 ──────────────────────────────────────────
 load();
+updateBackupBanner();
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist().catch(() => {});
+}
 </script>
 </body>
 </html>
