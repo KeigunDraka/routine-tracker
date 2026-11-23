@@ -421,6 +421,25 @@
     .dot { width: 3px; height: 3px; border-radius: 50%; background: #40916c; }
     .dot.run { background: #4a9eda; }
 
+    /* ── 기타 칸 ── */
+    .extra-name {
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      outline: none;
+      color: #e0e0e0;
+      font-size: 13px;
+      font-family: inherit;
+      padding: 4px 8px;
+      flex: 1;
+      min-width: 0;
+    }
+    .extra-name:focus { border-color: #40916c; }
+    .extra-name::placeholder { color: #333; }
+    .rcal-ex { font-size: 8px; color: #d4a5ff; font-weight: 600; }
+    .rcal-subtitle { font-size: 12px; color: #777; margin: 16px 0 8px; }
+    .rcal-total-row-sub { font-size: 11px; color: #555; margin-left: 6px; }
+
     /* ── 백업 알림 배너 ── */
     .backup-banner {
       display: none;
@@ -757,7 +776,7 @@
 
   <!-- 수면 -->
   <div class="section-title section-title-row">
-    <span>수면</span><span class="rev-badge">Rev. 7</span>
+    <span>수면</span><span class="rev-badge">Rev. 8</span>
   </div>
   <div class="sleep-row">
     <div class="time-group">
@@ -775,6 +794,11 @@
   <!-- Daily Routine -->
   <div class="section-title">DAILY ROUTINE</div>
   <div class="routines" id="routineList"></div>
+
+  <!-- 기타 (이름 직접 입력) -->
+  <div class="section-title">기타</div>
+  <div class="routines" id="extraList"></div>
+  <datalist id="extraNameList"></datalist>
 
   <!-- 달리기 -->
   <div class="running-card" id="runningCard">
@@ -939,10 +963,114 @@ function loadDate() {
 
   const saved = db[selectedKey()];
   if (saved) loadFromRecord(saved);
+  setupExtras(saved);
 
   updateDateDisplay();
   renderRoutines();
+  renderExtras();
   renderCalendar();
+}
+
+// ── 기타 칸 (이름 직접 입력) ───────────────────────
+const EXTRA_SLOTS = 3;
+let extras = [];   // [{ name, count }]
+
+function emptyExtras() {
+  return Array.from({ length: EXTRA_SLOTS }, () => ({ name: '', count: null }));
+}
+
+// 기록이 없는 날은 최근 3일 이내에 쓴 이름을 칸에 미리 채워 둔다 (개수는 비움)
+function setupExtras(saved) {
+  extras = emptyExtras();
+  if (saved && Array.isArray(saved.extras)) {
+    saved.extras.slice(0, EXTRA_SLOTS).forEach((e, i) => {
+      extras[i] = { name: e.name || '', count: (e.count ?? null) };
+    });
+    return;
+  }
+  for (let back = 1; back <= 3; back++) {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() - back);
+    const rec = db[dateToKey(d)];
+    if (rec && Array.isArray(rec.extras) && rec.extras.length) {
+      rec.extras.slice(0, EXTRA_SLOTS).forEach((e, i) => {
+        extras[i] = { name: e.name || '', count: null };
+      });
+      return;
+    }
+  }
+}
+
+function escHtml(t) {
+  return String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderExtras() {
+  const list = document.getElementById('extraList');
+  list.innerHTML = '';
+  extras.forEach((e, i) => {
+    const done = !!e.name && Number(e.count) > 0;
+    const item = document.createElement('div');
+    item.className = 'routine-item' + (done ? ' done' : '');
+    item.id = 'ex_' + i;
+    item.innerHTML = `
+      <div class="check-circle"></div>
+      <input class="extra-name" id="exn_${i}" list="extraNameList" placeholder="기타 ${i+1} 이름"
+        value="${escHtml(e.name)}" oninput="onExtraName(${i}, this.value)">
+      <div class="routine-controls">
+        <input class="routine-num" id="exc_${i}" type="number" min="0" placeholder="0"
+          value="${e.count ?? ''}" oninput="onExtraCount(${i}, this.value)">
+        <span class="routine-unit">개</span>
+        <button class="plus-btn" onclick="addExtra(${i}, 1)">+1</button>
+      </div>`;
+    list.appendChild(item);
+  });
+  renderExtraNameList();
+}
+
+function updateExtraUI(i) {
+  const item = document.getElementById('ex_' + i);
+  if (!item) return;
+  const e = extras[i];
+  item.classList.toggle('done', !!e.name && Number(e.count) > 0);
+}
+
+function onExtraName(i, v)  { extras[i].name = v; updateExtraUI(i); }
+function onExtraCount(i, v) { extras[i].count = v === '' ? null : Number(v); updateExtraUI(i); }
+function addExtra(i, step) {
+  extras[i].count = (Number(extras[i].count) || 0) + step;
+  const inp = document.getElementById('exc_' + i);
+  if (inp) inp.value = extras[i].count;
+  updateExtraUI(i);
+}
+
+// 지금까지 쓴 기타 이름 모음: { 이름: { total, days, first, last } }
+function collectExtraNames() {
+  const map = {};
+  Object.values(db).forEach(rec => {
+    if (!Array.isArray(rec.extras)) return;
+    rec.extras.forEach(e => {
+      const name = (e.name || '').trim();
+      if (!name) return;
+      if (!map[name]) map[name] = { total: 0, days: 0, first: rec.date, last: rec.date };
+      const m = map[name];
+      const c = Number(e.count) || 0;
+      m.total += c;
+      if (c > 0) m.days += 1;
+      if (rec.date < m.first) m.first = rec.date;
+      if (rec.date > m.last)  m.last  = rec.date;
+    });
+  });
+  return map;
+}
+
+function renderExtraNameList() {
+  const dl = document.getElementById('extraNameList');
+  if (!dl) return;
+  const names = Object.entries(collectExtraNames())
+    .sort((a, b) => b[1].last.localeCompare(a[1].last))
+    .map(([n]) => n);
+  dl.innerHTML = names.map(n => `<option value="${escHtml(n)}">`).join('');
 }
 
 // ── 날짜 표시 ──────────────────────────────────────
@@ -1248,12 +1376,16 @@ function saveDay() {
     sleepTime: document.getElementById('sleepTime').value || null,
     wakeTime:  document.getElementById('wakeTime').value  || null,
     routines:  routineData,
+    extras:    extras
+      .map(e => ({ name: (e.name || '').trim(), count: (e.count !== null && e.count !== '' && !isNaN(e.count)) ? Number(e.count) : null }))
+      .filter(e => e.name),
     running:   hasRun ? { km: km || null, heartRate: hr || null, pace: pace || null } : null,
     memo:      document.getElementById('memo').value.trim() || null,
   };
 
   localStorage.setItem('routine_db', JSON.stringify(db));
   renderCalendar();
+  renderExtraNameList();
   updateBackupBanner();
   toast('저장했어요 ✓');
 }
@@ -1466,6 +1598,13 @@ function showPopup(dateStr) {
       if (parts) html += `<div class="popup-row"><span class="popup-key">달리기</span><span class="popup-val done">${parts}</span></div>`;
     }
 
+    if (Array.isArray(rec.extras)) {
+      rec.extras.forEach(e => {
+        const ok = Number(e.count) > 0;
+        html += `<div class="popup-row"><span class="popup-key">${escHtml(e.name)}</span><span class="popup-val ${ok ? 'done' : 'skip'}">${e.count != null ? e.count + ' 개' : '—'}</span></div>`;
+      });
+    }
+
     if (rec.memo) {
       html += `<div class="popup-row" style="flex-direction:column;align-items:flex-start;gap:4px"><span class="popup-key">메모</span><span style="font-size:12px;color:#888;line-height:1.5">${rec.memo}</span></div>`;
     }
@@ -1610,6 +1749,15 @@ function renderReport() {
         cell += '</div>';
       }
 
+      if (Array.isArray(rec.extras)) {
+        const ex = rec.extras.filter(e => e.name && Number(e.count) > 0);
+        if (ex.length) {
+          cell += '<div class="rcal-row">';
+          ex.forEach(e => { cell += `<span class="rcal-ex">${escHtml(e.name.slice(0, 4))}${e.count}</span>`; });
+          cell += '</div>';
+        }
+      }
+
       if (rec.running) {
         const km   = rec.running.km        ? `${rec.running.km}k`        : '';
         const pace = rec.running.pace      ? `${rec.running.pace}`        : '';
@@ -1683,10 +1831,22 @@ function renderTotalsView(body) {
     rows += `<div class="rcal-total-row"><span class="rcal-total-row-label">${r.label}</span><span class="rcal-total-row-val">${totals[r.id].toLocaleString()}${r.unit}</span></div>`;
   });
 
+  const exNames = Object.entries(collectExtraNames())
+    .sort((a, b) => b[1].last.localeCompare(a[1].last));
+  let exRows = '';
+  exNames.forEach(([name, m]) => {
+    const range = m.first === m.last ? m.first.slice(5) : `${m.first.slice(5)}~${m.last.slice(5)}`;
+    exRows += `<div class="rcal-total-row"><span class="rcal-total-row-label">${escHtml(name)}<span class="rcal-total-row-sub">${m.days}일 · ${range}</span></span><span class="rcal-total-row-val">${m.total.toLocaleString()}개</span></div>`;
+  });
+  const exHtml = exNames.length
+    ? `<div class="rcal-subtitle">기타 이름 목록 (최근 사용순)</div><div class="rcal-totals-list">${exRows}</div>`
+    : '';
+
   body.innerHTML = `
     <button class="rcal-back-btn" onclick="showCalendarView()">‹ 달력으로 돌아가기</button>
     <div class="rcal-totals-grand">전체 합계 <b>${grand.toLocaleString()}</b></div>
     <div class="rcal-totals-list">${rows}</div>
+    ${exHtml}
   `;
 }
 
