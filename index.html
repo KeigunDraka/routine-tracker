@@ -421,6 +421,11 @@
     .dot { width: 3px; height: 3px; border-radius: 50%; background: #40916c; }
     .dot.run { background: #4a9eda; }
 
+    /* ── 세트 입력 ── */
+    .set-num { width: 40px; font-size: 14px; padding: 4px 2px; }
+    .set-sum { font-size: 11px; color: #444; min-width: 34px; text-align: right; }
+    .routine-item.done .set-sum { color: #40916c; }
+
     /* ── 기타 칸 ── */
     .extra-name {
       background: #111;
@@ -776,7 +781,7 @@
 
   <!-- 수면 -->
   <div class="section-title section-title-row">
-    <span>수면</span><span class="rev-badge">Rev. 8</span>
+    <span>수면</span><span class="rev-badge">Rev. 9</span>
   </div>
   <div class="sleep-row">
     <div class="time-group">
@@ -881,8 +886,8 @@ const EX_IMG = {"spine1": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2w
 
 const ROUTINES = [
   { id: 'golf',      label: '골프 스윙',   type: 'number', unit: '회',    step: 5,  defaultVal: 15 },
-  { id: 'pushup',    label: '팔굽혀펴기',  type: 'number', unit: '개',    step: 1,  defaultVal: 3 },
-  { id: 'squat',     label: '스쿼트',      type: 'number', unit: '개',    step: 1,  defaultVal: 3 },
+  { id: 'pushup',    label: '팔굽혀펴기',  type: 'number', unit: '개',    step: 1,  defaultVal: 3, sets: 3 },
+  { id: 'squat',     label: '스쿼트',      type: 'number', unit: '개',    step: 1,  defaultVal: 3, sets: 3 },
   { id: 'spine1',  label: '척추 늘리기',            type: 'number', unit: '회', step: 5, defaultVal: 10, imgKey: 'spine1'  },
   { id: 'spine2',  label: '꼬리뼈 들기',            type: 'number', unit: '회', step: 5, defaultVal: 10, imgKey: 'spine2'  },
   { id: 'spine3',  label: '하늘보고 팔다리 교차들기', type: 'number', unit: '회', step: 5, defaultVal: 10, imgKey: 'spine3'  },
@@ -914,6 +919,8 @@ function getRealToday() { return new Date(); }
 let selectedDate = new Date();
 let values       = {};
 let prefilled    = {};
+let setVals      = {};   // { pushup: [8,8,8] }
+let setPrefill   = {};   // 최근 기록의 세트 값 (자동 입력용)
 let calMonth     = { y: selectedDate.getFullYear(), m: selectedDate.getMonth() };
 let db           = JSON.parse(localStorage.getItem('routine_db') || '{}');
 let reportMonth  = { y: new Date().getFullYear(), m: new Date().getMonth() };
@@ -958,6 +965,8 @@ function loadDate() {
   if (activeTimer) stopExerciseTimer();
   values    = {};
   prefilled = {};
+  setVals   = {};
+  setPrefill = {};
   clearForm();
   loadPrefilled();
 
@@ -1113,6 +1122,25 @@ function loadPrefilled() {
     }
     prefilled[r.id] = (found !== null) ? found : r.defaultVal;
   });
+
+  // 세트 운동: 최근 3일 이내 세트 값을 찾고, 없으면 기존 하루 값을 세트마다 적용
+  ROUTINES.filter(r => r.sets).forEach(r => {
+    let found = null;
+    for (let back = 1; back <= 3; back++) {
+      const d = new Date(selectedDate);
+      d.setDate(d.getDate() - back);
+      const sv = db[dateToKey(d)]?.sets?.[r.id];
+      if (Array.isArray(sv) && sv.some(v => Number(v) > 0)) { found = sv; break; }
+    }
+    if (found) {
+      setPrefill[r.id] = Array.from({ length: r.sets }, (_, i) => Number(found[i]) || Number(found[found.length - 1]) || r.defaultVal);
+    } else {
+      // 세트 기록이 없으면 예전 하루 합계를 세트 수로 나눠 시작값으로 사용
+      const total = prefilled[r.id];
+      const per = (total != null && total !== r.defaultVal) ? Math.max(1, Math.round(total / r.sets)) : r.defaultVal;
+      setPrefill[r.id] = Array(r.sets).fill(per);
+    }
+  });
 }
 
 // ── 기록에서 폼 로드 ───────────────────────────────
@@ -1126,6 +1154,15 @@ function loadFromRecord(rec) {
       values[r.id] = rec.routines[r.id] ?? null;
     });
   }
+  ROUTINES.filter(r => r.sets).forEach(r => {
+    const sv = rec.sets?.[r.id];
+    if (Array.isArray(sv)) {
+      setVals[r.id] = Array.from({ length: r.sets }, (_, i) => (sv[i] ?? null));
+    } else if (values[r.id] != null) {
+      // 세트 기능 이전 기록: 합계를 1세트 칸에 넣어 보여줌
+      setVals[r.id] = [values[r.id], ...Array(r.sets - 1).fill(null)];
+    }
+  });
 
   if (rec.running) {
     if (rec.running.km)        document.getElementById('runKm').value   = rec.running.km;
@@ -1151,6 +1188,21 @@ function renderRoutines() {
     const label  = `${thumb}<div class="routine-label">${r.label}</div>`;
 
     let controls = '';
+    if (r.sets) {
+      const sv = setVals[r.id] || Array(r.sets).fill(null);
+      const pf = setPrefill[r.id] || [];
+      let inputs = '';
+      for (let i = 0; i < r.sets; i++) {
+        inputs += `<input class="routine-num set-num" id="rs_${r.id}_${i}" type="number" min="0"
+          value="${sv[i] ?? ''}" placeholder="${pf[i] ?? ''}"
+          onclick="fillSet('${r.id}', ${i})" oninput="onSetInput('${r.id}', ${i}, this.value)">`;
+      }
+      const sum = setTotal(r.id);
+      item.innerHTML = `<div class="check-circle" onclick="checkToggle('${r.id}')"></div>${label}
+        <div class="routine-controls">${inputs}<span class="set-sum" id="ssum_${r.id}">${sum ? '=' + sum : ''}</span></div>`;
+      list.appendChild(item);
+      return;
+    }
     if (r.type === 'number') {
       const v = values[r.id] ?? prefilled[r.id] ?? '';
       const circleClickable = `<div class="check-circle" onclick="checkToggle('${r.id}')"></div>`;
@@ -1306,6 +1358,40 @@ function stopExerciseTimer() {
   activeTimer = null;
 }
 
+// ── 세트 입력 ─────────────────────────────────────
+function setTotal(id) {
+  const sv = setVals[id];
+  if (!Array.isArray(sv)) return 0;
+  return sv.reduce((a, v) => a + (Number(v) || 0), 0);
+}
+
+function syncSetTotal(id) {
+  const t = setTotal(id);
+  values[id] = t > 0 ? t : null;
+  const el = document.getElementById('ssum_' + id);
+  if (el) el.textContent = t ? '=' + t : '';
+  updateRoutineUI(id);
+}
+
+function onSetInput(id, i, val) {
+  const r = ROUTINES.find(x => x.id === id);
+  if (!setVals[id]) setVals[id] = Array(r.sets).fill(null);
+  setVals[id][i] = val === '' ? null : Number(val);
+  syncSetTotal(id);
+}
+
+// 빈 세트 칸을 누르면 최근 그 세트 값을 자동으로 넣음
+function fillSet(id, i) {
+  const r = ROUTINES.find(x => x.id === id);
+  if (!setVals[id]) setVals[id] = Array(r.sets).fill(null);
+  if (setVals[id][i] != null && setVals[id][i] !== '') return;
+  const v = setPrefill[id]?.[i] ?? r.defaultVal;
+  setVals[id][i] = v;
+  const inp = document.getElementById(`rs_${id}_${i}`);
+  if (inp) { inp.value = v; inp.select(); }
+  syncSetTotal(id);
+}
+
 function isDone(r, val) {
   if (r.type === 'toggle') return !!val;
   return val !== undefined && val !== null && val !== '' && Number(val) > 0;
@@ -1341,6 +1427,17 @@ function toggleItem(id) {
 
 function checkToggle(id) {
   const r   = ROUTINES.find(x => x.id === id);
+  if (r.sets) {
+    setVals[id] = isDone(r, values[id])
+      ? Array(r.sets).fill(null)
+      : [...(setPrefill[id] || Array(r.sets).fill(r.defaultVal))];
+    setVals[id].forEach((v, i) => {
+      const inp = document.getElementById(`rs_${id}_${i}`);
+      if (inp) inp.value = v ?? '';
+    });
+    syncSetTotal(id);
+    return;
+  }
   const cur = values[id];
   if (isDone(r, cur)) {
     values[id] = null;
@@ -1376,6 +1473,8 @@ function saveDay() {
     sleepTime: document.getElementById('sleepTime').value || null,
     wakeTime:  document.getElementById('wakeTime').value  || null,
     routines:  routineData,
+    sets:      Object.fromEntries(ROUTINES.filter(r => r.sets && Array.isArray(setVals[r.id]) && setTotal(r.id) > 0)
+                 .map(r => [r.id, setVals[r.id].map(v => (v === null || v === '' ? null : Number(v)))])),
     extras:    extras
       .map(e => ({ name: (e.name || '').trim(), count: (e.count !== null && e.count !== '' && !isNaN(e.count)) ? Number(e.count) : null }))
       .filter(e => e.name),
@@ -1584,7 +1683,10 @@ function showPopup(dateStr) {
       if (r.type === 'toggle') {
         html += `<div class="popup-row"><span class="popup-key">${r.label}</span><span class="popup-val ${done ? 'done' : 'skip'}">${done ? '✓' : '—'}</span></div>`;
       } else {
-        html += `<div class="popup-row"><span class="popup-key">${r.label}</span><span class="popup-val ${done ? 'done' : 'skip'}">${val != null ? val + ' ' + r.unit : '—'}</span></div>`;
+        const sv = rec.sets?.[r.id];
+        const setTxt = Array.isArray(sv) ? sv.filter(v => v != null).join('·') + ' (' : '';
+        const valTxt = val != null ? (setTxt ? `${setTxt}${val}${r.unit})` : val + ' ' + r.unit) : '—';
+        html += `<div class="popup-row"><span class="popup-key">${r.label}</span><span class="popup-val ${done ? 'done' : 'skip'}">${valTxt}</span></div>`;
       }
     });
 
