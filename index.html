@@ -421,6 +421,45 @@
     .dot { width: 3px; height: 3px; border-radius: 50%; background: #40916c; }
     .dot.run { background: #4a9eda; }
 
+    /* ── 세트 입력 ── */
+    .set-num { width: 40px; font-size: 14px; padding: 4px 2px; }
+    .set-sum { font-size: 11px; color: #444; min-width: 34px; text-align: right; }
+    .routine-item.done .set-sum { color: #40916c; }
+
+    /* ── 기타 칸 ── */
+    .extra-name {
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      outline: none;
+      color: #e0e0e0;
+      font-size: 13px;
+      font-family: inherit;
+      padding: 4px 8px;
+      flex: 1;
+      min-width: 0;
+    }
+    .extra-name:focus { border-color: #40916c; }
+    .extra-name::placeholder { color: #333; }
+    .rcal-ex { font-size: 8px; color: #d4a5ff; font-weight: 600; }
+    .rcal-subtitle { font-size: 12px; color: #777; margin: 16px 0 8px; }
+    .rcal-total-row-sub { font-size: 11px; color: #555; margin-left: 6px; }
+
+    /* ── 백업 알림 배너 ── */
+    .backup-banner {
+      display: none;
+      background: #2a1f0d;
+      border: 1px solid #6a4a1e;
+      color: #f0b860;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .backup-banner.show { display: block; }
+
     /* ── 토스트 ── */
     .toast {
       position: fixed;
@@ -717,6 +756,8 @@
 <body>
 <div class="container">
 
+  <div class="backup-banner" id="backupBanner" onclick="exportData()"></div>
+
   <!-- 날짜 네비게이션 -->
   <div class="date-nav">
     <button class="nav-btn" onclick="changeDay(-1)">‹</button>
@@ -740,7 +781,7 @@
 
   <!-- 수면 -->
   <div class="section-title section-title-row">
-    <span>수면</span><span class="rev-badge">Rev. 6</span>
+    <span>수면</span><span class="rev-badge">Rev. 9</span>
   </div>
   <div class="sleep-row">
     <div class="time-group">
@@ -758,6 +799,11 @@
   <!-- Daily Routine -->
   <div class="section-title">DAILY ROUTINE</div>
   <div class="routines" id="routineList"></div>
+
+  <!-- 기타 (이름 직접 입력) -->
+  <div class="section-title">기타</div>
+  <div class="routines" id="extraList"></div>
+  <datalist id="extraNameList"></datalist>
 
   <!-- 달리기 -->
   <div class="running-card" id="runningCard">
@@ -840,8 +886,8 @@ const EX_IMG = {"spine1": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2w
 
 const ROUTINES = [
   { id: 'golf',      label: '골프 스윙',   type: 'number', unit: '회',    step: 5,  defaultVal: 15 },
-  { id: 'pushup',    label: '팔굽혀펴기',  type: 'number', unit: '개',    step: 1,  defaultVal: 3 },
-  { id: 'squat',     label: '스쿼트',      type: 'number', unit: '개',    step: 1,  defaultVal: 3 },
+  { id: 'pushup',    label: '팔굽혀펴기',  type: 'number', unit: '개',    step: 1,  defaultVal: 3, sets: 3 },
+  { id: 'squat',     label: '스쿼트',      type: 'number', unit: '개',    step: 1,  defaultVal: 3, sets: 3 },
   { id: 'spine1',  label: '척추 늘리기',            type: 'number', unit: '회', step: 5, defaultVal: 10, imgKey: 'spine1'  },
   { id: 'spine2',  label: '꼬리뼈 들기',            type: 'number', unit: '회', step: 5, defaultVal: 10, imgKey: 'spine2'  },
   { id: 'spine3',  label: '하늘보고 팔다리 교차들기', type: 'number', unit: '회', step: 5, defaultVal: 10, imgKey: 'spine3'  },
@@ -873,6 +919,8 @@ function getRealToday() { return new Date(); }
 let selectedDate = new Date();
 let values       = {};
 let prefilled    = {};
+let setVals      = {};   // { pushup: [8,8,8] }
+let setPrefill   = {};   // 최근 기록의 세트 값 (자동 입력용)
 let calMonth     = { y: selectedDate.getFullYear(), m: selectedDate.getMonth() };
 let db           = JSON.parse(localStorage.getItem('routine_db') || '{}');
 let reportMonth  = { y: new Date().getFullYear(), m: new Date().getMonth() };
@@ -892,7 +940,8 @@ let reportMonth  = { y: new Date().getFullYear(), m: new Date().getMonth() };
 
 // ── 키 ─────────────────────────────────────────────
 function dateToKey(d) {
-  return d.toISOString().slice(0, 10);
+  // 휴대폰 현지 날짜 기준 (UTC 기준이면 UAE 새벽 0~4시 기록이 전날로 저장되는 문제)
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 function selectedKey() { return dateToKey(selectedDate); }
@@ -916,15 +965,121 @@ function loadDate() {
   if (activeTimer) stopExerciseTimer();
   values    = {};
   prefilled = {};
+  setVals   = {};
+  setPrefill = {};
   clearForm();
   loadPrefilled();
 
   const saved = db[selectedKey()];
   if (saved) loadFromRecord(saved);
+  setupExtras(saved);
 
   updateDateDisplay();
   renderRoutines();
+  renderExtras();
   renderCalendar();
+}
+
+// ── 기타 칸 (이름 직접 입력) ───────────────────────
+const EXTRA_SLOTS = 3;
+let extras = [];   // [{ name, count }]
+
+function emptyExtras() {
+  return Array.from({ length: EXTRA_SLOTS }, () => ({ name: '', count: null }));
+}
+
+// 기록이 없는 날은 최근 3일 이내에 쓴 이름을 칸에 미리 채워 둔다 (개수는 비움)
+function setupExtras(saved) {
+  extras = emptyExtras();
+  if (saved && Array.isArray(saved.extras)) {
+    saved.extras.slice(0, EXTRA_SLOTS).forEach((e, i) => {
+      extras[i] = { name: e.name || '', count: (e.count ?? null) };
+    });
+    return;
+  }
+  for (let back = 1; back <= 3; back++) {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() - back);
+    const rec = db[dateToKey(d)];
+    if (rec && Array.isArray(rec.extras) && rec.extras.length) {
+      rec.extras.slice(0, EXTRA_SLOTS).forEach((e, i) => {
+        extras[i] = { name: e.name || '', count: null };
+      });
+      return;
+    }
+  }
+}
+
+function escHtml(t) {
+  return String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderExtras() {
+  const list = document.getElementById('extraList');
+  list.innerHTML = '';
+  extras.forEach((e, i) => {
+    const done = !!e.name && Number(e.count) > 0;
+    const item = document.createElement('div');
+    item.className = 'routine-item' + (done ? ' done' : '');
+    item.id = 'ex_' + i;
+    item.innerHTML = `
+      <div class="check-circle"></div>
+      <input class="extra-name" id="exn_${i}" list="extraNameList" placeholder="기타 ${i+1} 이름"
+        value="${escHtml(e.name)}" oninput="onExtraName(${i}, this.value)">
+      <div class="routine-controls">
+        <input class="routine-num" id="exc_${i}" type="number" min="0" placeholder="0"
+          value="${e.count ?? ''}" oninput="onExtraCount(${i}, this.value)">
+        <span class="routine-unit">개</span>
+        <button class="plus-btn" onclick="addExtra(${i}, 1)">+1</button>
+      </div>`;
+    list.appendChild(item);
+  });
+  renderExtraNameList();
+}
+
+function updateExtraUI(i) {
+  const item = document.getElementById('ex_' + i);
+  if (!item) return;
+  const e = extras[i];
+  item.classList.toggle('done', !!e.name && Number(e.count) > 0);
+}
+
+function onExtraName(i, v)  { extras[i].name = v; updateExtraUI(i); }
+function onExtraCount(i, v) { extras[i].count = v === '' ? null : Number(v); updateExtraUI(i); }
+function addExtra(i, step) {
+  extras[i].count = (Number(extras[i].count) || 0) + step;
+  const inp = document.getElementById('exc_' + i);
+  if (inp) inp.value = extras[i].count;
+  updateExtraUI(i);
+}
+
+// 지금까지 쓴 기타 이름 모음: { 이름: { total, days, first, last } }
+function collectExtraNames() {
+  const map = {};
+  Object.values(db).forEach(rec => {
+    if (!Array.isArray(rec.extras)) return;
+    rec.extras.forEach(e => {
+      const name = (e.name || '').trim();
+      if (!name) return;
+      if (!map[name]) map[name] = { total: 0, days: 0, first: rec.date, last: rec.date };
+      const m = map[name];
+      const c = Number(e.count) || 0;
+      m.total += c;
+      if (c > 0) m.days += 1;
+      if (rec.date < m.first) m.first = rec.date;
+      if (rec.date > m.last)  m.last  = rec.date;
+    });
+  });
+  return map;
+}
+
+function renderExtraNameList() {
+  const dl = document.getElementById('extraNameList');
+  if (!dl) return;
+  const names = Object.entries(collectExtraNames())
+    .sort((a, b) => b[1].last.localeCompare(a[1].last))
+    .map(([n]) => n);
+  dl.innerHTML = names.map(n => `<option value="${escHtml(n)}">`).join('');
 }
 
 // ── 날짜 표시 ──────────────────────────────────────
@@ -967,6 +1122,25 @@ function loadPrefilled() {
     }
     prefilled[r.id] = (found !== null) ? found : r.defaultVal;
   });
+
+  // 세트 운동: 최근 3일 이내 세트 값을 찾고, 없으면 기존 하루 값을 세트마다 적용
+  ROUTINES.filter(r => r.sets).forEach(r => {
+    let found = null;
+    for (let back = 1; back <= 3; back++) {
+      const d = new Date(selectedDate);
+      d.setDate(d.getDate() - back);
+      const sv = db[dateToKey(d)]?.sets?.[r.id];
+      if (Array.isArray(sv) && sv.some(v => Number(v) > 0)) { found = sv; break; }
+    }
+    if (found) {
+      setPrefill[r.id] = Array.from({ length: r.sets }, (_, i) => Number(found[i]) || Number(found[found.length - 1]) || r.defaultVal);
+    } else {
+      // 세트 기록이 없으면 예전 하루 합계를 세트 수로 나눠 시작값으로 사용
+      const total = prefilled[r.id];
+      const per = (total != null && total !== r.defaultVal) ? Math.max(1, Math.round(total / r.sets)) : r.defaultVal;
+      setPrefill[r.id] = Array(r.sets).fill(per);
+    }
+  });
 }
 
 // ── 기록에서 폼 로드 ───────────────────────────────
@@ -980,6 +1154,15 @@ function loadFromRecord(rec) {
       values[r.id] = rec.routines[r.id] ?? null;
     });
   }
+  ROUTINES.filter(r => r.sets).forEach(r => {
+    const sv = rec.sets?.[r.id];
+    if (Array.isArray(sv)) {
+      setVals[r.id] = Array.from({ length: r.sets }, (_, i) => (sv[i] ?? null));
+    } else if (values[r.id] != null) {
+      // 세트 기능 이전 기록: 합계를 1세트 칸에 넣어 보여줌
+      setVals[r.id] = [values[r.id], ...Array(r.sets - 1).fill(null)];
+    }
+  });
 
   if (rec.running) {
     if (rec.running.km)        document.getElementById('runKm').value   = rec.running.km;
@@ -1005,6 +1188,21 @@ function renderRoutines() {
     const label  = `${thumb}<div class="routine-label">${r.label}</div>`;
 
     let controls = '';
+    if (r.sets) {
+      const sv = setVals[r.id] || Array(r.sets).fill(null);
+      const pf = setPrefill[r.id] || [];
+      let inputs = '';
+      for (let i = 0; i < r.sets; i++) {
+        inputs += `<input class="routine-num set-num" id="rs_${r.id}_${i}" type="number" min="0"
+          value="${sv[i] ?? ''}" placeholder="${pf[i] ?? ''}"
+          onclick="fillSet('${r.id}', ${i})" oninput="onSetInput('${r.id}', ${i}, this.value)">`;
+      }
+      const sum = setTotal(r.id);
+      item.innerHTML = `<div class="check-circle" onclick="checkToggle('${r.id}')"></div>${label}
+        <div class="routine-controls">${inputs}<span class="set-sum" id="ssum_${r.id}">${sum ? '=' + sum : ''}</span></div>`;
+      list.appendChild(item);
+      return;
+    }
     if (r.type === 'number') {
       const v = values[r.id] ?? prefilled[r.id] ?? '';
       const circleClickable = `<div class="check-circle" onclick="checkToggle('${r.id}')"></div>`;
@@ -1160,6 +1358,40 @@ function stopExerciseTimer() {
   activeTimer = null;
 }
 
+// ── 세트 입력 ─────────────────────────────────────
+function setTotal(id) {
+  const sv = setVals[id];
+  if (!Array.isArray(sv)) return 0;
+  return sv.reduce((a, v) => a + (Number(v) || 0), 0);
+}
+
+function syncSetTotal(id) {
+  const t = setTotal(id);
+  values[id] = t > 0 ? t : null;
+  const el = document.getElementById('ssum_' + id);
+  if (el) el.textContent = t ? '=' + t : '';
+  updateRoutineUI(id);
+}
+
+function onSetInput(id, i, val) {
+  const r = ROUTINES.find(x => x.id === id);
+  if (!setVals[id]) setVals[id] = Array(r.sets).fill(null);
+  setVals[id][i] = val === '' ? null : Number(val);
+  syncSetTotal(id);
+}
+
+// 빈 세트 칸을 누르면 최근 그 세트 값을 자동으로 넣음
+function fillSet(id, i) {
+  const r = ROUTINES.find(x => x.id === id);
+  if (!setVals[id]) setVals[id] = Array(r.sets).fill(null);
+  if (setVals[id][i] != null && setVals[id][i] !== '') return;
+  const v = setPrefill[id]?.[i] ?? r.defaultVal;
+  setVals[id][i] = v;
+  const inp = document.getElementById(`rs_${id}_${i}`);
+  if (inp) { inp.value = v; inp.select(); }
+  syncSetTotal(id);
+}
+
 function isDone(r, val) {
   if (r.type === 'toggle') return !!val;
   return val !== undefined && val !== null && val !== '' && Number(val) > 0;
@@ -1195,6 +1427,17 @@ function toggleItem(id) {
 
 function checkToggle(id) {
   const r   = ROUTINES.find(x => x.id === id);
+  if (r.sets) {
+    setVals[id] = isDone(r, values[id])
+      ? Array(r.sets).fill(null)
+      : [...(setPrefill[id] || Array(r.sets).fill(r.defaultVal))];
+    setVals[id].forEach((v, i) => {
+      const inp = document.getElementById(`rs_${id}_${i}`);
+      if (inp) inp.value = v ?? '';
+    });
+    syncSetTotal(id);
+    return;
+  }
   const cur = values[id];
   if (isDone(r, cur)) {
     values[id] = null;
@@ -1230,28 +1473,75 @@ function saveDay() {
     sleepTime: document.getElementById('sleepTime').value || null,
     wakeTime:  document.getElementById('wakeTime').value  || null,
     routines:  routineData,
+    sets:      Object.fromEntries(ROUTINES.filter(r => r.sets && Array.isArray(setVals[r.id]) && setTotal(r.id) > 0)
+                 .map(r => [r.id, setVals[r.id].map(v => (v === null || v === '' ? null : Number(v)))])),
+    extras:    extras
+      .map(e => ({ name: (e.name || '').trim(), count: (e.count !== null && e.count !== '' && !isNaN(e.count)) ? Number(e.count) : null }))
+      .filter(e => e.name),
     running:   hasRun ? { km: km || null, heartRate: hr || null, pace: pace || null } : null,
     memo:      document.getElementById('memo').value.trim() || null,
   };
 
   localStorage.setItem('routine_db', JSON.stringify(db));
   renderCalendar();
+  renderExtraNameList();
+  updateBackupBanner();
   toast('저장했어요 ✓');
 }
 
-// ── 내보내기 ───────────────────────────────────────
-function exportData() {
+// ── 내보내기 (공유 창 → 카톡·드라이브 등) ─────────
+const BACKUP_KEY  = 'routine_last_backup';
+const BACKUP_DAYS = 7;
+
+async function exportData() {
   const records = Object.values(db).sort((a, b) => a.date.localeCompare(b.date));
   const payload = { exported_at: new Date().toISOString(), records };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  const now  = new Date();
-  a.href     = url;
-  a.download = `routines_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.json`;
+  const json  = JSON.stringify(payload, null, 2);
+  const fname = `routines_${todayKey().replace(/-/g, '')}.json`;
+  const file  = new File([json], fname, { type: 'application/json' });
+
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: '루틴 백업', text: fname });
+      markBackedUp();
+      toast('백업 공유 완료');
+      return;
+    }
+  } catch (e) {
+    if (e && e.name === 'AbortError') { toast('백업을 취소했어요'); return; }
+    // 공유 실패 시 아래 다운로드로 진행
+  }
+
+  const url = URL.createObjectURL(file);
+  const a   = document.createElement('a');
+  a.href = url;
+  a.download = fname;
   a.click();
   URL.revokeObjectURL(url);
-  toast('내보내기 완료');
+  markBackedUp();
+  toast('다운로드 폴더에 저장했어요');
+}
+
+function markBackedUp() {
+  try { localStorage.setItem(BACKUP_KEY, String(Date.now())); } catch (e) {}
+  updateBackupBanner();
+}
+
+function updateBackupBanner() {
+  const el = document.getElementById('backupBanner');
+  if (!el) return;
+  if (Object.keys(db).length === 0) { el.classList.remove('show'); return; }
+  let last = 0;
+  try { last = Number(localStorage.getItem(BACKUP_KEY) || 0); } catch (e) {}
+  const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+  if (days === null || days >= BACKUP_DAYS) {
+    el.textContent = days === null
+      ? '⚠ 아직 백업한 적이 없어요 · 눌러서 백업하기'
+      : `⚠ 마지막 백업 ${days}일 전 · 눌러서 백업하기`;
+    el.classList.add('show');
+  } else {
+    el.classList.remove('show');
+  }
 }
 
 // ── 가져오기 & 병합 ────────────────────────────────
@@ -1393,7 +1683,10 @@ function showPopup(dateStr) {
       if (r.type === 'toggle') {
         html += `<div class="popup-row"><span class="popup-key">${r.label}</span><span class="popup-val ${done ? 'done' : 'skip'}">${done ? '✓' : '—'}</span></div>`;
       } else {
-        html += `<div class="popup-row"><span class="popup-key">${r.label}</span><span class="popup-val ${done ? 'done' : 'skip'}">${val != null ? val + ' ' + r.unit : '—'}</span></div>`;
+        const sv = rec.sets?.[r.id];
+        const setTxt = Array.isArray(sv) ? sv.filter(v => v != null).join('·') + ' (' : '';
+        const valTxt = val != null ? (setTxt ? `${setTxt}${val}${r.unit})` : val + ' ' + r.unit) : '—';
+        html += `<div class="popup-row"><span class="popup-key">${r.label}</span><span class="popup-val ${done ? 'done' : 'skip'}">${valTxt}</span></div>`;
       }
     });
 
@@ -1405,6 +1698,13 @@ function showPopup(dateStr) {
         run.pace      ? run.pace + '/km'      : '',
       ].filter(Boolean).join(' · ');
       if (parts) html += `<div class="popup-row"><span class="popup-key">달리기</span><span class="popup-val done">${parts}</span></div>`;
+    }
+
+    if (Array.isArray(rec.extras)) {
+      rec.extras.forEach(e => {
+        const ok = Number(e.count) > 0;
+        html += `<div class="popup-row"><span class="popup-key">${escHtml(e.name)}</span><span class="popup-val ${ok ? 'done' : 'skip'}">${e.count != null ? e.count + ' 개' : '—'}</span></div>`;
+      });
     }
 
     if (rec.memo) {
@@ -1551,6 +1851,15 @@ function renderReport() {
         cell += '</div>';
       }
 
+      if (Array.isArray(rec.extras)) {
+        const ex = rec.extras.filter(e => e.name && Number(e.count) > 0);
+        if (ex.length) {
+          cell += '<div class="rcal-row">';
+          ex.forEach(e => { cell += `<span class="rcal-ex">${escHtml(e.name.slice(0, 4))}${e.count}</span>`; });
+          cell += '</div>';
+        }
+      }
+
       if (rec.running) {
         const km   = rec.running.km        ? `${rec.running.km}k`        : '';
         const pace = rec.running.pace      ? `${rec.running.pace}`        : '';
@@ -1624,10 +1933,22 @@ function renderTotalsView(body) {
     rows += `<div class="rcal-total-row"><span class="rcal-total-row-label">${r.label}</span><span class="rcal-total-row-val">${totals[r.id].toLocaleString()}${r.unit}</span></div>`;
   });
 
+  const exNames = Object.entries(collectExtraNames())
+    .sort((a, b) => b[1].last.localeCompare(a[1].last));
+  let exRows = '';
+  exNames.forEach(([name, m]) => {
+    const range = m.first === m.last ? m.first.slice(5) : `${m.first.slice(5)}~${m.last.slice(5)}`;
+    exRows += `<div class="rcal-total-row"><span class="rcal-total-row-label">${escHtml(name)}<span class="rcal-total-row-sub">${m.days}일 · ${range}</span></span><span class="rcal-total-row-val">${m.total.toLocaleString()}개</span></div>`;
+  });
+  const exHtml = exNames.length
+    ? `<div class="rcal-subtitle">기타 이름 목록 (최근 사용순)</div><div class="rcal-totals-list">${exRows}</div>`
+    : '';
+
   body.innerHTML = `
     <button class="rcal-back-btn" onclick="showCalendarView()">‹ 달력으로 돌아가기</button>
     <div class="rcal-totals-grand">전체 합계 <b>${grand.toLocaleString()}</b></div>
     <div class="rcal-totals-list">${rows}</div>
+    ${exHtml}
   `;
 }
 
@@ -1680,6 +2001,11 @@ function minsToTimeStr(totalMins) {
 // ── 시작 ───────────────────────────────────────────
 updateDateDisplay();
 loadDate();
+updateBackupBanner();
+// 저장 공간 부족 시 브라우저가 기록을 지우지 않도록 요청 (크롬 리셋까지 막지는 못함)
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist().catch(() => {});
+}
 
 // 화면을 켜둔 채로 자정을 넘기는 경우를 대비해 1분마다 날짜 갱신 여부 확인
 let _lastSeenTodayKey = todayKey();
