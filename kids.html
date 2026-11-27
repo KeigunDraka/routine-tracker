@@ -710,6 +710,7 @@
 
   .rcal-date { font-size: 10px; color: #555; line-height: 1.2; }
   .rcal-sat-cell .rcal-date { color: #4a6a8a; }
+  .rcal-sun-cell .rcal-date { color: #ef5350; }
   .rcal-today-date { color: #52b788; font-weight: 700; }
 
   .rcal-row { display: flex; flex-wrap: wrap; gap: 2px; margin-bottom: 1px; }
@@ -798,7 +799,7 @@
   <div class="header-title">오늘의 운동 💪</div>
   <div class="header-date-row">
     <span class="header-date" id="headerDate"></span>
-    <span class="rev-badge">rev.4-2611</span>
+    <span class="rev-badge">rev.5-2611</span>
   </div>
   <div class="progress-bar-wrap">
     <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
@@ -1278,7 +1279,7 @@ function renderReport() {
   document.getElementById('reportMonthLabel').textContent = `${MONTHS_EN[m]} ${y}`;
 
   const daysInMonth = new Date(y, m+1, 0).getDate();
-  const firstDay    = new Date(y, m, 1).getDay();
+  const firstDay    = (new Date(y, m, 1).getDay() + 6) % 7; // 월요일 시작: 월=0 ... 일=6
   const tKey        = todayKey();
   const monthPrefix = `${y}-${String(m+1).padStart(2,'0')}`;
 
@@ -1399,8 +1400,8 @@ function renderReport() {
 
   // ── 달력 그리드 ──
   let grid = '<div class="rcal-grid">';
-  ['SUN','MON','TUE','WED','THU','FRI','SAT'].forEach((d,i) => {
-    const cls = i===0 ? ' rcal-sun-hdr' : i===6 ? ' rcal-sat-hdr' : '';
+  ['MON','TUE','WED','THU','FRI','SAT','SUN'].forEach((d,i) => {
+    const cls = i===6 ? ' rcal-sun-hdr' : i===5 ? ' rcal-sat-hdr' : '';
     grid += `<div class="rcal-header${cls}">${d}</div>`;
   });
 
@@ -1419,9 +1420,11 @@ function renderReport() {
     const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const rec     = db[dateStr];
     const isToday = dateStr === tKey;
-    const isSat   = new Date(y, m, d).getDay() === 6;
+    const dow     = new Date(y, m, d).getDay();
+    const isSat   = dow === 6;
+    const isSun   = dow === 0;
 
-    grid += `<div class="rcal-cell${isToday?' rcal-today':''}${isSat?' rcal-sat-cell':''}" onclick="showPopup('${dateStr}')">`;
+    grid += `<div class="rcal-cell${isToday?' rcal-today':''}${isSat?' rcal-sat-cell':''}${isSun?' rcal-sun-cell':''}" onclick="showPopup('${dateStr}')">`;
     grid += `<div class="rcal-top-row"><span class="rcal-date${isToday?' rcal-today-date':''}">${d}</span></div>`;
     grid += renderCellContent(dateStr, rec);
     grid += '</div>';
