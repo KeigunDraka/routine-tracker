@@ -799,7 +799,7 @@
   <div class="header-title">오늘의 운동 💪</div>
   <div class="header-date-row">
     <span class="header-date" id="headerDate"></span>
-    <span class="rev-badge">rev.5-2611</span>
+    <span class="rev-badge">rev.6-2611</span>
   </div>
   <div class="progress-bar-wrap">
     <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
@@ -924,23 +924,23 @@ function todayStr() {
   return new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
 }
 
-// ── 이번 주(일~토) 인증 현황 ───────────────────────
+// ── 이번 주(월~일) 인증 현황 ───────────────────────
 function getWeekVerifyStatus() {
   const now = new Date();
-  const dow = now.getDay(); // 0=일 ... 6=토
-  const sunday = new Date(now);
-  sunday.setDate(now.getDate() - dow);
+  const offset = (now.getDay() + 6) % 7; // 월=0 ... 일=6
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - offset);
 
   const result = [];
   for (let i = 0; i < 7; i++) {
-    const d = new Date(sunday);
-    d.setDate(sunday.getDate() + i);
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const isToday = key === todayKey();
     const rec = normalizeRecord(db[key]);
     const isVerified = isToday ? verified : !!(rec && rec.verified);
     const isFuture = d > now && !isToday;
-    result.push({ label: DAYS[i], verified: isVerified, isToday, isFuture });
+    result.push({ label: DAYS[d.getDay()], verified: isVerified, isToday, isFuture });
   }
   return result;
 }
